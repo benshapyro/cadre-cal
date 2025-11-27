@@ -479,6 +479,10 @@ model User {
   calAiPhoneNumbers              CalAiPhoneNumber[]
   agents                         Agent[]
 
+  // Group Polls relations
+  groupPollsCreated              GroupPoll[]            @relation("GroupPollCreator")
+  groupPollParticipations        GroupPollParticipant[] @relation("GroupPollParticipant")
+
   @@unique([email])
   @@unique([email, username])
   @@unique([username, organizationId])
@@ -2893,4 +2897,92 @@ model CalendarCacheEvent {
   @@unique([selectedCalendarId, externalId])
   @@index([start, end, status])
   @@index([selectedCalendarId, iCalUID])
+}
+
+// ============================================================================
+// GROUP POLLS - Cadre Multi-Party Availability Discovery
+// ============================================================================
+
+enum GroupPollStatus {
+  ACTIVE
+  BOOKED
+  CLOSED
+  EXPIRED
+}
+
+enum ParticipantType {
+  CADRE_REQUIRED
+  CADRE_OPTIONAL
+  CLIENT
+}
+
+model GroupPoll {
+  id              Int               @id @default(autoincrement())
+  title           String
+  description     String?
+  durationMinutes Int               @default(60)
+  dateRangeStart  DateTime
+  dateRangeEnd    DateTime
+  status          GroupPollStatus   @default(ACTIVE)
+  shareSlug       String            @unique
+  createdById     Int
+  createdBy       User              @relation("GroupPollCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  windows         GroupPollWindow[]
+  participants    GroupPollParticipant[]
+
+  @@index([createdById])
+  @@index([shareSlug])
+  @@index([status])
+}
+
+model GroupPollWindow {
+  id        Int       @id @default(autoincrement())
+  pollId    Int
+  poll      GroupPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  date      DateTime  @db.Date
+  startTime DateTime  @db.Time
+  endTime   DateTime  @db.Time
+
+  @@index([pollId])
+  @@unique([pollId, date, startTime, endTime])
+}
+
+model GroupPollParticipant {
+  id           Int              @id @default(autoincrement())
+  pollId       Int
+  poll         GroupPoll        @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  type         ParticipantType
+  userId       Int?             // Cal.com user ID if Cadre member
+  user         User?            @relation("GroupPollParticipant", fields: [userId], references: [id])
+  name         String
+  email        String
+  hasResponded Boolean          @default(false)
+  respondedAt  DateTime?
+  accessToken  String           @unique @default(cuid()) // For client response URL
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Relations
+  responses    GroupPollResponse[]
+
+  @@index([pollId])
+  @@index([email])
+  @@index([accessToken])
+}
+
+model GroupPollResponse {
+  id            Int                   @id @default(autoincrement())
+  participantId Int
+  participant   GroupPollParticipant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  date          DateTime              @db.Date
+  startTime     DateTime              @db.Time
+  endTime       DateTime              @db.Time
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([participantId])
 }

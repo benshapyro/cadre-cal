@@ -44,4 +44,5 @@ export const ENDPOINTS = [
   "aiVoiceAgent",
   "phoneNumber",
   "pbac",
+  "groupPolls",
 ] as const;

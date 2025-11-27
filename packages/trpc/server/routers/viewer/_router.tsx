@@ -26,6 +26,7 @@ import { eventTypesRouter } from "./eventTypes/_router";
 import { eventTypesRouter as heavyEventTypesRouter } from "./eventTypes/heavy/_router";
 import { filterSegmentsRouter } from "./filterSegments/_router";
 import { googleWorkspaceRouter } from "./googleWorkspace/_router";
+import { groupPollsRouter } from "./groupPolls/_router";
 import { i18nRouter } from "./i18n/_router";
 import { meRouter } from "./me/_router";
 import { oAuthRouter } from "./oAuth/_router";
@@ -86,4 +87,5 @@ export const viewerRouter = router({
   travelSchedules: travelSchedulesRouter,
   aiVoiceAgent: aiVoiceAgentRouter,
   phoneNumber: phoneNumberRouter,
+  groupPolls: groupPollsRouter,
 });

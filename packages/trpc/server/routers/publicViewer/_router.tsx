@@ -1,6 +1,7 @@
 import publicProcedure from "../../procedures/publicProcedure";
 import { router } from "../../trpc";
 import { ZUserEmailVerificationRequiredSchema } from "./checkIfUserEmailVerificationRequired.schema";
+import { ZGetPollByTokenSchema, ZSubmitPollResponseSchema } from "./groupPollResponse.schema";
 import { ZMarkHostAsNoShowInputSchema } from "./markHostAsNoShow.schema";
 import { event } from "./procedures/event";
 import { ZSamlTenantProductInputSchema } from "./samlTenantProduct.schema";
@@ -36,4 +37,15 @@ export const publicViewerRouter = router({
       const { default: handler } = await import("./checkIfUserEmailVerificationRequired.handler");
       return handler(opts);
     }),
+
+  // Group Poll public endpoints
+  getPollByToken: publicProcedure.input(ZGetPollByTokenSchema).query(async (opts) => {
+    const { default: handler } = await import("./getPollByToken.handler");
+    return handler(opts);
+  }),
+
+  submitPollResponse: publicProcedure.input(ZSubmitPollResponseSchema).mutation(async (opts) => {
+    const { default: handler } = await import("./submitPollResponse.handler");
+    return handler(opts);
+  }),
 });
