@@ -234,6 +234,7 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
                     <button
                       key={window.id}
                       type="button"
+                      data-testid="time-slot-button"
                       onClick={() => toggleSlot(slotKey)}
                       className={`rounded-md border px-3 py-2 text-sm transition-colors ${
                         isSelected
@@ -265,7 +266,9 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
 
       {participant.hasResponded && (
         <div className="mt-4 text-center">
-          <Badge variant="success">You have already responded to this poll</Badge>
+          <Badge variant="success" data-testid="already-responded-badge">
+            You have already responded to this poll
+          </Badge>
         </div>
       )}
     </div>

@@ -149,6 +149,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
                 <Button
                   color="secondary"
                   size="sm"
+                  data-testid="copy-link-button"
                   onClick={() => copyToClipboard(participant.accessToken, participant.name)}>
                   {copiedToken === participant.accessToken ? "Copied!" : "Copy Link"}
                 </Button>
@@ -177,7 +178,11 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
 
       {/* Actions */}
       <div className="flex justify-end gap-3">
-        <Button color="destructive" onClick={() => deleteMutation.mutate({ id: pollId })} loading={deleteMutation.isPending}>
+        <Button
+          color="destructive"
+          data-testid="delete-poll-button"
+          onClick={() => deleteMutation.mutate({ id: pollId })}
+          loading={deleteMutation.isPending}>
           Delete Poll
         </Button>
       </div>
