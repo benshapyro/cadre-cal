@@ -88,11 +88,27 @@
 - **Time display format**: Fixed timezone issues - times stored as `@db.Time` return 1970-01-01 dates, now extracting HH:mm
 - **Submit availability 400**: Changed schema from `z.date()` to `z.string()` for date field
 
+**Phase 1B: Automated Testing & Heat Map** (2025-11-27)
+1. ✅ E2E tests (Playwright) - 6 passing, 1 skipped
+   - Poll creation flow
+   - Poll list view
+   - Poll detail view with participant responses
+   - Poll deletion
+   - Share link copy functionality
+   - Already-responded badge display
+2. ✅ Unit tests for heat map calculation (15 passing)
+3. ✅ Heat map calculation library (`packages/features/group-polls/lib/`)
+   - `calculateHeatMap()` - aggregates responses per time window
+   - `getHeatMapColorClass()` - Tailwind color classes for visualization
+   - Support for filtering by participant type
+   - Statistics: optimal slots, perfect slots
+4. ✅ Added data-testid attributes for E2E test reliability
+
 ### 📋 Next Up
 
 **Phase 1B: Remaining Items**
-1. ⬜ Automated E2E tests (Playwright test scripts)
-2. ⬜ Heat map visualization of responses
+1. ⬜ Heat map UI components (HeatMap.tsx, HeatMapCell.tsx, HeatMapLegend.tsx)
+2. ⬜ Integrate heat map into detail and response views
 3. ⬜ Email notifications for participants
 4. ⬜ Mobile testing
 
@@ -181,8 +197,8 @@ git status
 | Phase 0B: Production Deployment | ✅ Complete (OAuth pending) | 2025-11-27 | 2025-11-27 |
 | Phase 0C: Team Onboarding | ⬜ Deferred | — | — |
 | Phase 1: Group Polls Core | ✅ Complete | 2025-11-27 | 2025-11-27 |
-| Phase 1B: Testing & Polish | 🟡 In Progress | 2025-11-27 | — |
-| Phase 2: Heat Map & Results | ⬜ Not Started | — | — |
+| Phase 1B: Testing & Heat Map | 🟡 In Progress (E2E + Unit tests done) | 2025-11-27 | — |
+| Phase 2: Heat Map UI & Email | ⬜ Not Started | — | — |
 | Phase 3: Booking Integration | ⬜ Not Started | — | — |
 | Phase 4: Notifications & QR | ⬜ Not Started | — | — |
 | Phase 5: Polish & Launch | ⬜ Not Started | — | — |
