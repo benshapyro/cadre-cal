@@ -54,6 +54,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
   const [selectedSlot, setSelectedSlot] = useState<HeatMapCellData | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showRequiredOnly, setShowRequiredOnly] = useState(false);
 
   const { data: poll, isLoading, error, refetch } = trpc.viewer.groupPolls.get.useQuery({ id: pollId });
 
@@ -64,6 +65,16 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
     },
     onError: (error) => {
       showToast(error.message || "Failed to delete poll", "error");
+    },
+  });
+
+  const closeMutation = trpc.viewer.groupPolls.close.useMutation({
+    onSuccess: () => {
+      showToast("Poll closed", "success");
+      refetch();
+    },
+    onError: (error) => {
+      showToast(error.message || "Failed to close poll", "error");
     },
   });
 
@@ -234,12 +245,31 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
 
       {/* Availability Heat Map */}
       <div className="border-subtle bg-default rounded-md border p-6">
-        <h3 className="text-emphasis mb-4 text-lg font-medium">
-          {poll.booking ? "Availability Overview" : "Select a Time Slot"}
-        </h3>
-        {poll.heatMap ? (
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-emphasis text-lg font-medium">
+            {poll.booking ? "Availability Overview" : "Select a Time Slot"}
+          </h3>
+          {/* Toggle between all participants and required only */}
+          <div className="flex gap-2">
+            <Button
+              color={showRequiredOnly ? "secondary" : "primary"}
+              size="sm"
+              data-testid="toggle-all-participants"
+              onClick={() => setShowRequiredOnly(false)}>
+              All Participants
+            </Button>
+            <Button
+              color={showRequiredOnly ? "primary" : "secondary"}
+              size="sm"
+              data-testid="toggle-required-only"
+              onClick={() => setShowRequiredOnly(true)}>
+              Required Only
+            </Button>
+          </div>
+        </div>
+        {(showRequiredOnly ? poll.heatMapRequired : poll.heatMap) ? (
           <HeatMap
-            data={poll.heatMap}
+            data={showRequiredOnly ? poll.heatMapRequired : poll.heatMap}
             showParticipantNames={true}
             selectable={!poll.booking && poll.status !== "BOOKED"}
             selectedSlots={selectedSlot ? new Set([getCellKey(selectedSlot)]) : undefined}
@@ -352,12 +382,21 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
 
       {/* Actions */}
       <div className="flex justify-end gap-3">
-        {poll.status !== "BOOKED" && (
+        {poll.status !== "BOOKED" && poll.status !== "CLOSED" && poll.status !== "EXPIRED" && (
           <Button
             color="secondary"
             data-testid="edit-poll-button"
             onClick={() => router.push(`/group-polls/${pollId}/edit`)}>
             Edit Poll
+          </Button>
+        )}
+        {poll.status === "ACTIVE" && (
+          <Button
+            color="secondary"
+            data-testid="close-poll-button"
+            onClick={() => closeMutation.mutate({ id: pollId })}
+            loading={closeMutation.isPending}>
+            Close Poll
           </Button>
         )}
         <Button

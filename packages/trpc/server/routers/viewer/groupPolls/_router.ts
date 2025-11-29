@@ -45,4 +45,12 @@ export const groupPollsRouter = router({
     const { updateHandler } = await import("./update.handler");
     return updateHandler({ ctx, input });
   }),
+
+  // Close a poll without booking
+  close: authedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { closeHandler } = await import("./close.handler");
+      return closeHandler({ ctx, input });
+    }),
 });

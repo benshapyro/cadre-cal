@@ -195,11 +195,25 @@ export default function GroupPollsListView() {
     );
   }
 
+  const activePollCount = polls.filter((p) => p.status === "ACTIVE").length;
+
   return (
-    <div className="divide-subtle border-subtle mb-16 overflow-hidden rounded-md border">
-      {polls.map((poll) => (
-        <PollListItem key={poll.id} poll={poll} onDelete={() => refetch()} />
-      ))}
+    <div>
+      {/* Active Poll Count */}
+      {activePollCount > 0 && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="bg-success text-success rounded-full px-3 py-1 text-sm font-medium">
+            {activePollCount} active poll{activePollCount !== 1 ? "s" : ""}
+          </span>
+          <span className="text-subtle text-sm">awaiting responses</span>
+        </div>
+      )}
+
+      <div className="divide-subtle border-subtle mb-16 overflow-hidden rounded-md border">
+        {polls.map((poll) => (
+          <PollListItem key={poll.id} poll={poll} onDelete={() => refetch()} />
+        ))}
+      </div>
     </div>
   );
 }

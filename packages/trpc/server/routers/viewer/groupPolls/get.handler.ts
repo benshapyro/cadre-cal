@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { calculateHeatMap } from "@calcom/features/group-polls";
+import { expirePollIfOverdue } from "@calcom/features/group-polls/lib/expirePolls";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
@@ -14,6 +15,9 @@ type GetOptions = {
 };
 
 export const getHandler = async ({ ctx, input }: GetOptions) => {
+  // Check if the poll should be auto-expired (void to indicate intentionally unused)
+  await expirePollIfOverdue(input.id);
+
   const poll = await prisma.groupPoll.findUnique({
     where: {
       id: input.id,
@@ -98,8 +102,9 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
     hasResponded: p.hasResponded,
   }));
 
-  // Calculate heat map
+  // Calculate heat maps
   const heatMap = calculateHeatMap(formattedWindows, allResponses, formattedParticipants);
+  const heatMapRequired = calculateHeatMap(formattedWindows, allResponses, formattedParticipants, "CADRE_REQUIRED");
 
   // Return a clean object to avoid Date serialization issues
   return {
@@ -145,5 +150,6 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
       accessToken: p.accessToken,
     })),
     heatMap,
+    heatMapRequired,
   };
 };

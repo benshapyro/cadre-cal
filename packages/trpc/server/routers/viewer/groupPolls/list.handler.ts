@@ -1,3 +1,4 @@
+import { expireOverduePolls } from "@calcom/features/group-polls/lib/expirePolls";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
@@ -9,6 +10,9 @@ type ListOptions = {
 };
 
 export const listHandler = async ({ ctx }: ListOptions) => {
+  // Auto-expire any overdue polls before fetching the list
+  await expireOverduePolls(ctx.user.id);
+
   const polls = await prisma.groupPoll.findMany({
     where: {
       createdById: ctx.user.id,
