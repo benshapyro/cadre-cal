@@ -1,7 +1,7 @@
 # Cadre Group Polls — Implementation Plan
 
 > **Document Status:** Living Document
-> **Last Updated:** 2025-11-27
+> **Last Updated:** 2025-11-29
 > **Owner:** Ben @ Cadre AI
 
 ---
@@ -418,8 +418,9 @@ Each phase is complete when:
 | Phase 4: Booking Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Full booking flow working - poll→booking creation |
 | Phase 2B: Timezone Fix & Calendar Sync | ✅ Complete | 2025-11-29 | 2025-11-29 | Date parsing fix, EventManager integration |
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 | /poll/[shareSlug] page, QR code, multi-select submit |
-| Phase 6: Slack App Integration | ⬜ Not Started | — | — | OAuth-based Slack notifications |
-| Phase 7: Polish & Launch | ⬜ Not Started | — | — | Poll editing, auto-expire, dashboard widget |
+| Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Private Slack app, DM notifications working |
+| Phase 7: Poll Editing | ✅ Complete | 2025-11-29 | 2025-11-29 | Edit page, add/remove participants, update date range |
+| Phase 8: Polish & Launch | ⬜ Not Started | — | — | Auto-expire, dashboard widget, production deployment |
 
 ---
 
@@ -437,6 +438,8 @@ Each phase is complete when:
 | 2025-11-28 | Claude + Ben | **Phase 1B + Phase 4 Complete:** E2E tests, heat map visualization, email invites, booking integration |
 | 2025-11-29 | Claude + Ben | **Phase 2B Complete:** Timezone bug fix (YYYY-MM-DD local parsing), EventManager integration for calendar sync |
 | 2025-11-29 | Claude + Ben | **Phase 5 Complete:** Public poll link (/poll/[shareSlug]), QR code generation, multi-participant submit, ShareDialog component |
+| 2025-11-28 | Claude + Ben | **Phase 6 Complete:** Slack app integration - private app, DM notifications to Cadre participants |
+| 2025-11-29 | Claude + Ben | **Phase 7 Complete:** Poll editing - add/remove participants, update date range. **All MVP requirements done!** |
 
 ---
 
@@ -514,10 +517,16 @@ packages/trpc/react/shared.ts  # Modified: added "groupPolls" to ENDPOINTS
 - [x] Attendees linked to booking
 - [x] Full flow tested: poll → responses → select slot → book → calendar event
 
-**⬜ Remaining for MVP:**
+**🎉 All MVP Requirements Complete!**
 - [x] ~~Fix date display timezone issue~~ ✅ Completed in Phase 2B
 - [x] ~~Google Calendar sync for created bookings~~ ✅ Completed in Phase 2B (EventManager integration)
 - [x] ~~QR code generation~~ ✅ Completed in Phase 5
 - [x] ~~Public poll link with multi-select submit~~ ✅ Completed in Phase 5
-- [ ] Slack notifications (must-have responded, all responded) - Phase 6
-- [ ] Poll editing after creation - Phase 7
+- [x] ~~Slack notifications~~ ✅ Completed in Phase 6 (DMs working)
+- [x] ~~Poll editing after creation~~ ✅ Completed in Phase 7
+
+**Nice-to-have for Polish (Phase 8):**
+- [ ] Auto-expire polls when dates pass
+- [ ] Manual close poll functionality
+- [ ] Dashboard poll count widget
+- [ ] Toggle all/required view on heat map

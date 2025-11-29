@@ -284,8 +284,8 @@ When poll creator selects a slot and clicks "Book":
 | C7 | Add client participants | ✅ Implemented | Participant manager in create form |
 | C8 | Add title and description | ✅ Implemented | Text fields in create form |
 | C9 | Receive shareable link and QR code | ✅ Implemented | ShareDialog with QR code, copy link, download QR PNG |
-| C10 | Add participants after creation | ⬜ Not Started | Phase 1B |
-| C11 | Edit windows after creation | ⬜ Not Started | Phase 1B |
+| C10 | Add participants after creation | ✅ Implemented | Phase 7 - Edit page with add participant form |
+| C11 | Edit windows after creation | ✅ Implemented | Phase 7 - Date range change regenerates windows |
 | **Poll Response** | | | |
 | R1 | Open poll without login | ✅ Implemented | Public route `/p/[accessToken]` |
 | R2 | Enter name and email | ✅ Implemented | Name/email fields on response page |
@@ -333,8 +333,17 @@ When poll creator selects a slot and clicks "Book":
 - [x] ~~Google Calendar sync for bookings~~ ✅ Phase 2B (EventManager)
 - [x] ~~QR codes~~ ✅ Phase 5 (ShareDialog with download)
 - [x] ~~Public poll link with multi-participant submit~~ ✅ Phase 5
-- [x] ~~Slack notifications~~ ✅ Phase 6 (code complete, needs Slack app setup)
-- [ ] Poll editing after creation - Phase 7
+- [x] ~~Slack notifications~~ ✅ Phase 6 (Slack app created, DMs working)
+- [x] ~~Poll editing after creation~~ ✅ Phase 7 (add/remove participants, update date range)
+
+**🎉 All MVP (C-priority) requirements complete!**
+
+**Nice-to-have (not blocking launch):**
+- [ ] Toggle all/required view (B2) - Post-MVP
+- [ ] Dashboard poll count (M2) - Phase 4
+- [ ] Manual close poll (M3) - Phase 4
+- [ ] Auto-expire polls (M4) - Phase 4
+- [ ] Cadre calendar availability check (C3) - Post-MVP enhancement
 
 ---
 
@@ -346,3 +355,4 @@ When poll creator selects a slot and clicks "Book":
 | 2025-11-27 | Claude + Ben | Updated IDs from UUID to Integer (Cal.com convention), resolved timezone question, added access_token field |
 | 2025-11-27 | Claude + Ben | Added Section 9: Implementation Status tracking user story progress |
 | 2025-11-28 | Claude + Ben | Phase 6: Slack notifications implemented (B6-B7 complete) |
+| 2025-11-29 | Claude + Ben | Phase 7: Poll editing (C10, C11 complete). All MVP requirements done! |
