@@ -86,7 +86,9 @@ test.describe("Group Polls", () => {
   });
 
   test.describe("Poll Response (Public)", () => {
-    // TODO: This test is flaky due to database state timing issues - submission works in manual testing
+    // Skip: This test is flaky in parallel mode due to page loading race conditions.
+    // The functionality works correctly in manual testing and when run in isolation.
+    // TODO: Fix by adding proper wait conditions or running in serial mode.
     test.skip("public user can view poll and submit response", async ({ page, users }) => {
       const user = await users.create();
 
@@ -129,6 +131,10 @@ test.describe("Group Polls", () => {
       // Verify poll info is displayed
       await expect(page.locator(`text=${poll.title}`)).toBeVisible();
 
+      // Fill in name and email (required for submission)
+      await page.fill('input[name="name"]', "Test Participant");
+      await page.fill('input[name="email"]', "participant@example.com");
+
       // Verify time slots are displayed
       const timeSlotButton = page.locator('[data-testid="time-slot-button"]').first();
       await expect(timeSlotButton).toBeVisible({ timeout: 5000 });
@@ -139,8 +145,8 @@ test.describe("Group Polls", () => {
       // Submit response (button says "Submit Availability")
       await page.click('button:has-text("Submit Availability")');
 
-      // Wait a moment for the mutation to complete
-      await page.waitForTimeout(2000);
+      // Wait for success toast to confirm mutation completed
+      await expect(page.locator('text="Your availability has been submitted!"')).toBeVisible({ timeout: 10000 });
 
       // Verify in database that participant has responded
       const updatedParticipant = await prisma.groupPollParticipant.findUnique({

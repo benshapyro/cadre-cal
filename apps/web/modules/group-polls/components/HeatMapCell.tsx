@@ -22,6 +22,7 @@ export function HeatMapCell({ cell, showParticipantNames, isSelected, onClick }:
       type="button"
       onClick={onClick}
       disabled={!onClick}
+      data-testid="time-slot-button"
       className={`min-h-[60px] w-full rounded-md p-2 text-center transition-all ${colorClass}
         ${isSelected ? "ring-2 ring-emphasis ring-offset-2" : ""}
         ${onClick ? "cursor-pointer hover:ring-1 hover:ring-subtle" : "cursor-default"}
