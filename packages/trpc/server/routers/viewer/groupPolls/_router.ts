@@ -5,6 +5,7 @@ import { router } from "../../../trpc";
 import { ZBookFromPollSchema } from "./book.schema";
 import { ZCreateGroupPollSchema } from "./create.schema";
 import { ZGetGroupPollSchema } from "./get.schema";
+import { ZUpdateGroupPollSchema } from "./update.schema";
 
 export const groupPollsRouter = router({
   // List all polls created by the user
@@ -37,5 +38,11 @@ export const groupPollsRouter = router({
   book: authedProcedure.input(ZBookFromPollSchema).mutation(async ({ ctx, input }) => {
     const { bookFromPollHandler } = await import("./book.handler");
     return bookFromPollHandler({ ctx, input });
+  }),
+
+  // Update a poll (add/remove participants, change time windows)
+  update: authedProcedure.input(ZUpdateGroupPollSchema).mutation(async ({ ctx, input }) => {
+    const { updateHandler } = await import("./update.handler");
+    return updateHandler({ ctx, input });
   }),
 });

@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
-**Last Updated:** 2025-11-28
-**Current Phase:** Phase 6 In Progress - Slack App Integration
-**Overall Status:** 🟢 MVP Complete + Slack Notifications In Progress
+**Last Updated:** 2025-11-29
+**Current Phase:** Phase 7 Complete - Poll Editing Working!
+**Overall Status:** 🟢 Full MVP Complete (All C-requirements done)
 
 ---
 
@@ -219,10 +219,34 @@
 - When a CADRE_REQUIRED participant responds → notify all Cadre participants
 - When ALL participants have responded → notify all Cadre participants
 
-**Remaining:**
-- ⬜ Create Slack app in Cadre workspace (manual step)
-- ⬜ Get Bot Token and add to `.env`
-- ⬜ Manual testing with real Slack notifications
+**Testing Complete:**
+- ✅ Created Slack app "Cadre Group Polls" in workspace
+- ✅ Bot token configured in `.env`
+- ✅ Manual testing verified - DMs sent successfully to ben@gocadre.ai
+
+### ✅ Phase 7: Poll Editing After Creation (2025-11-29)
+
+**Backend (tRPC):**
+1. ✅ Created `update.schema.ts` - validation for update mutation
+2. ✅ Created `update.handler.ts` - handles add/remove participants, update time windows
+3. ✅ Added `update` mutation to groupPolls router
+4. ✅ Validates ownership and prevents editing booked polls
+5. ✅ Sends invite emails to newly added participants
+6. ✅ Resets participant responses when time windows change
+
+**UI (Edit Page):**
+7. ✅ Created `/group-polls/[id]/edit/page.tsx` route
+8. ✅ Created `group-polls-edit-view.tsx` component
+   - Pre-populates form with existing poll data
+   - Shows existing participants with remove confirmation
+   - Add new participants section
+   - Date range picker (warns about response reset)
+9. ✅ Added "Edit Poll" button to poll detail view (hidden for booked polls)
+
+**Testing:**
+- ✅ Add participant flow tested: Added "Test User" to existing poll
+- ✅ Toast notification: "Poll updated! 1 added, 0 removed"
+- ✅ Heat map updates to reflect new participant count
 
 **Future Enhancements (Not MVP):**
 
@@ -314,7 +338,8 @@ git status
 | Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
 | Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
-| Phase 6: Slack App Integration | 🔄 In Progress | 2025-11-28 | — |
+| Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 |
+| Phase 7: Poll Editing | ✅ Complete | 2025-11-29 | 2025-11-29 |
 | Phase 4: Polish & Launch | ⬜ Not Started | — | — |
 
 See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.

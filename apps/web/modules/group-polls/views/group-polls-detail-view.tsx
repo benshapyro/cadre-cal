@@ -352,6 +352,14 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
 
       {/* Actions */}
       <div className="flex justify-end gap-3">
+        {poll.status !== "BOOKED" && (
+          <Button
+            color="secondary"
+            data-testid="edit-poll-button"
+            onClick={() => router.push(`/group-polls/${pollId}/edit`)}>
+            Edit Poll
+          </Button>
+        )}
         <Button
           color="secondary"
           data-testid="share-poll-button"
