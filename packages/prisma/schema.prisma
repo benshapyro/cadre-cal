@@ -256,6 +256,9 @@ model EventType {
 
   bookingRequiresAuthentication Boolean @default(false)
 
+  // Group Polls that link to this event type
+  groupPolls GroupPoll[]
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -480,8 +483,8 @@ model User {
   agents                         Agent[]
 
   // Group Polls relations
-  groupPollsCreated              GroupPoll[]            @relation("GroupPollCreator")
-  groupPollParticipations        GroupPollParticipant[] @relation("GroupPollParticipant")
+  groupPollsCreated       GroupPoll[]            @relation("GroupPollCreator")
+  groupPollParticipations GroupPollParticipant[] @relation("GroupPollParticipant")
 
   @@unique([email])
   @@unique([email, username])
@@ -876,6 +879,8 @@ model Booking {
   routingFormResponses         RoutingFormResponseDenormalized[]
   expenseLogs                  CreditExpenseLog[]
   report                       BookingReport?
+  // Group Poll that created this booking (if any)
+  groupPoll                    GroupPoll?
 
   // @@partial_index([reassignById])
 
@@ -2917,26 +2922,41 @@ enum ParticipantType {
 }
 
 model GroupPoll {
-  id              Int               @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   title           String
   description     String?
-  durationMinutes Int               @default(60)
+  durationMinutes Int             @default(60)
   dateRangeStart  DateTime
   dateRangeEnd    DateTime
-  status          GroupPollStatus   @default(ACTIVE)
-  shareSlug       String            @unique
+  status          GroupPollStatus @default(ACTIVE)
+  shareSlug       String          @unique
   createdById     Int
-  createdBy       User              @relation("GroupPollCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdBy       User            @relation("GroupPollCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Event Type link for booking
+  eventTypeId Int?
+  eventType   EventType? @relation(fields: [eventTypeId], references: [id])
+
+  // Resulting booking after poll finalization
+  bookingId Int?     @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  // Selected time slot (set when booking is created)
+  selectedDate      DateTime? @db.Date
+  selectedStartTime DateTime? @db.Time
+  selectedEndTime   DateTime? @db.Time
 
   // Relations
-  windows         GroupPollWindow[]
-  participants    GroupPollParticipant[]
+  windows      GroupPollWindow[]
+  participants GroupPollParticipant[]
 
   @@index([createdById])
   @@index([shareSlug])
   @@index([status])
+  @@index([eventTypeId])
+  @@index([bookingId])
 }
 
 model GroupPollWindow {
@@ -2947,27 +2967,27 @@ model GroupPollWindow {
   startTime DateTime  @db.Time
   endTime   DateTime  @db.Time
 
-  @@index([pollId])
   @@unique([pollId, date, startTime, endTime])
+  @@index([pollId])
 }
 
 model GroupPollParticipant {
-  id           Int              @id @default(autoincrement())
+  id           Int             @id @default(autoincrement())
   pollId       Int
-  poll         GroupPoll        @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  poll         GroupPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   type         ParticipantType
-  userId       Int?             // Cal.com user ID if Cadre member
-  user         User?            @relation("GroupPollParticipant", fields: [userId], references: [id])
+  userId       Int? // Cal.com user ID if Cadre member
+  user         User?           @relation("GroupPollParticipant", fields: [userId], references: [id])
   name         String
   email        String
-  hasResponded Boolean          @default(false)
+  hasResponded Boolean         @default(false)
   respondedAt  DateTime?
-  accessToken  String           @unique @default(cuid()) // For client response URL
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  accessToken  String          @unique @default(cuid()) // For client response URL
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   // Relations
-  responses    GroupPollResponse[]
+  responses GroupPollResponse[]
 
   @@index([pollId])
   @@index([email])
@@ -2975,14 +2995,14 @@ model GroupPollParticipant {
 }
 
 model GroupPollResponse {
-  id            Int                   @id @default(autoincrement())
+  id            Int                  @id @default(autoincrement())
   participantId Int
-  participant   GroupPollParticipant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  date          DateTime              @db.Date
-  startTime     DateTime              @db.Time
-  endTime       DateTime              @db.Time
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  participant   GroupPollParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  date          DateTime             @db.Date
+  startTime     DateTime             @db.Time
+  endTime       DateTime             @db.Time
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@index([participantId])
 }

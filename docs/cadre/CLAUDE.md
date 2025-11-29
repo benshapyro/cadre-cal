@@ -114,8 +114,9 @@ yarn e2e           # Run E2E tests (Playwright)
 
 ### Current Status
 
-**Phase**: 1B In Progress (Manual Testing & Bug Fixes Complete)
-**Next**: Automated E2E tests, heat map visualization, email notifications
+**Phase**: Phase 2 Complete - Booking Integration Working!
+**Completed**: Heat map, email invites, booking flow (poll → select slot → create booking)
+**Next**: Slack notifications, QR codes, timezone fix, poll editing
 
 ### Where Code Lives
 

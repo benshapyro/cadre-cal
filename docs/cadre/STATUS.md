@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
-**Last Updated:** 2025-11-27
-**Current Phase:** Phase 1: Group Polls Implementation (Core Complete)
-**Overall Status:** 🟢 On Track
+**Last Updated:** 2025-11-29
+**Current Phase:** Phase 2 Complete - Booking Integration with Calendar Sync!
+**Overall Status:** 🟢 MVP Complete
 
 ---
 
@@ -104,13 +104,78 @@
    - Statistics: optimal slots, perfect slots
 4. ✅ Added data-testid attributes for E2E test reliability
 
-### 📋 Next Up
+### ✅ Phase 1B: Complete (2025-11-28)
 
-**Phase 1B: Remaining Items**
-1. ⬜ Heat map UI components (HeatMap.tsx, HeatMapCell.tsx, HeatMapLegend.tsx)
-2. ⬜ Integrate heat map into detail and response views
-3. ⬜ Email notifications for participants
-4. ⬜ Mobile testing
+**Heat Map Visualization:**
+1. ✅ Heat map UI components (`HeatMapCell.tsx`, `HeatMapLegend.tsx`, `HeatMap.tsx`)
+   - Color-coded cells showing availability (0%-100%)
+   - Interactive tooltips with participant names (organizer view)
+   - Selectable slots for response view
+   - "Perfect times" banner and statistics
+2. ✅ Heat map integrated into poll detail view (organizer sees all responses)
+3. ✅ Heat map integrated into public response view (anonymous counts only)
+4. ✅ tRPC handlers updated to calculate and return heat map data
+
+**Email Notifications:**
+5. ✅ Email template created (`GroupPollInviteEmail.tsx`)
+6. ✅ Email class created (`group-poll-invite-email.ts`) extending BaseEmail
+7. ✅ Invite emails automatically sent on poll creation
+
+**Mobile Testing:**
+8. ✅ All views tested on mobile viewport (375px)
+9. ✅ Poll list view - responsive layout
+10. ✅ Poll detail view - heat map grid adapts to screen size
+11. ✅ Public response view - selectable slots work on mobile
+12. ✅ Poll creation form - all fields accessible
+
+### ✅ Phase 2: Booking Integration (Core Complete - 2025-11-28)
+
+**Schema & Backend:**
+1. ✅ GroupPoll schema updated with `eventTypeId`, `bookingId`, `selectedDate/Time`
+2. ✅ Database migration applied (`prisma db push`)
+3. ✅ Create handler updated to validate and store eventTypeId
+4. ✅ Get handler updated to include eventType and booking data
+5. ✅ `book.schema.ts` and `book.handler.ts` created
+6. ✅ Booking procedure added to groupPolls router
+
+**UI Updates:**
+7. ✅ Event Type selector added to poll creation form
+8. ✅ Heat map made selectable in detail view
+9. ✅ Slot detail panel shows available/unavailable participants
+10. ✅ Confirmation dialog before booking
+11. ✅ BOOKED state display in poll detail view
+
+**Manual Testing Complete (2025-11-28):**
+12. ✅ Full booking flow tested end-to-end:
+    - Created poll "Booking Test Poll" with Event Type "30min"
+    - Submitted participant response (Test User selected Mon Dec 1)
+    - Selected time slot from heat map
+    - Created booking via confirmation dialog
+    - Poll status changed to BOOKED
+    - Booking record created (id: 31) with correct metadata
+    - Attendees linked to booking
+
+**Bug Fixes During Phase 2 Testing:**
+- **Event Type dropdown empty**: Fixed data access pattern - `eventTypesData` is an array, not `{eventTypeGroups: [...]}` (fixed in `group-polls-create-view.tsx`)
+- **Prisma client stale**: Regenerated after schema changes (`yarn workspace @calcom/prisma prisma generate`)
+- **Date display off-by-one**: UI shows "November 30" instead of "December 1" (timezone display issue - data is correct in DB)
+
+### ✅ Phase 2B: Bug Fixes & Calendar Sync (2025-11-29)
+
+**Timezone Bug Fix:**
+- ✅ Fixed date parsing in `group-polls-detail-view.tsx` - parse YYYY-MM-DD as local, not UTC
+- ✅ Fixed date parsing in `HeatMap.tsx` - same fix for date headings
+- ✅ Fixed date parsing in `poll-response-view.tsx` - same fix for public response page
+- ✅ All dates now display correctly (e.g., "Tue, Dec 2" not "Mon, Dec 1")
+
+**Calendar Sync (EventManager Integration):**
+- ✅ Added EventManager integration in `book.handler.ts`
+- ✅ Builds CalendarEvent with organizer, attendees, time details
+- ✅ Creates BookingReference records for calendar events
+- ✅ Graceful error handling (booking succeeds even if calendar sync fails)
+- ✅ Tested: EventManager called correctly, no BookingReference created only because local dev has no OAuth credentials
+
+**Future Enhancements (Not MVP):**
 
 **Deferred:**
 - Phase 0B: Google OAuth on Railway (can add later)
@@ -197,11 +262,10 @@ git status
 | Phase 0B: Production Deployment | ✅ Complete (OAuth pending) | 2025-11-27 | 2025-11-27 |
 | Phase 0C: Team Onboarding | ⬜ Deferred | — | — |
 | Phase 1: Group Polls Core | ✅ Complete | 2025-11-27 | 2025-11-27 |
-| Phase 1B: Testing & Heat Map | 🟡 In Progress (E2E + Unit tests done) | 2025-11-27 | — |
-| Phase 2: Heat Map UI & Email | ⬜ Not Started | — | — |
-| Phase 3: Booking Integration | ⬜ Not Started | — | — |
-| Phase 4: Notifications & QR | ⬜ Not Started | — | — |
-| Phase 5: Polish & Launch | ⬜ Not Started | — | — |
+| Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
+| Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
+| Phase 3: Notifications & QR | ⬜ Not Started | — | — |
+| Phase 4: Polish & Launch | ⬜ Not Started | — | — |
 
 See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.
 

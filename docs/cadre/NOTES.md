@@ -349,3 +349,156 @@ Minimal changes to existing Cal.com files:
 2. **Check component props** - UI components have specific requirements (e.g., SkeletonText vs Skeleton)
 3. **Use TypeScript inference** - `RouterOutputs["viewer"]["groupPolls"]["list"]` for response types
 4. **Handler return types** - Don't use `_count` if you're computing values; just return named fields
+
+---
+
+## Phase 2: Booking Integration (2025-11-28)
+
+### Bug Fixes During Testing
+
+#### Event Type Dropdown Empty
+- **Symptom:** Event Type selector in poll creation showed "You need to create an event type first" despite having 10 event types
+- **Root Cause:** Code expected `eventTypesData.eventTypeGroups` but `viewer.eventTypes.list` returns an array directly
+- **Fix:** Changed data access in `group-polls-create-view.tsx`:
+  ```typescript
+  // Before (broken):
+  const eventTypeOptions = (eventTypesData?.eventTypeGroups || [])
+    .flatMap((group) => group.eventTypes)
+    .map((et) => ({ value: et.id, label: `${et.title}...` }));
+
+  // After (fixed):
+  const eventTypeOptions = (eventTypesData || []).map((et) => ({
+    value: et.id,
+    label: `${et.title} (${et.length} min)`,
+  }));
+  ```
+
+#### Prisma Client Stale After Schema Changes
+- **Symptom:** Poll creation failed with "Unknown argument `eventTypeId`"
+- **Root Cause:** Schema was updated but Prisma client wasn't regenerated
+- **Fix:** Run `yarn workspace @calcom/prisma prisma generate` then restart dev server
+- **Note:** Hot reload doesn't pick up Prisma client changes - must restart
+
+#### Date Display Off-By-One (Known Issue)
+- **Symptom:** UI shows "Sunday, November 30" but database has "2025-12-01" (Monday, December 1)
+- **Root Cause:** Timezone handling in date display - likely UTC vs local timezone conversion
+- **Status:** Not fixed yet - data is correct in DB, just display issue
+- **Impact:** Minor - booking is created with correct date
+
+### Booking Integration Architecture
+
+The booking flow creates a Cal.com booking record:
+1. User selects time slot from heat map
+2. Confirmation dialog shows event type, time, and invitees
+3. `book.handler.ts` creates booking via direct Prisma insert:
+   - Creates `Booking` record with status `ACCEPTED`
+   - Creates `Attendee` records for available participants
+   - Sets metadata with `source: "group-poll"`, `pollId`, `pollTitle`
+4. Updates `GroupPoll` record:
+   - Sets `status` to `BOOKED`
+   - Links `bookingId`
+   - Stores `selectedDate`, `selectedStartTime`, `selectedEndTime`
+
+**Note:** ~~Current implementation creates booking record but doesn't trigger Cal.com's full booking flow.~~ **UPDATED:** EventManager integration added in Phase 2B.
+
+---
+
+## Phase 2B: Bug Fixes & Calendar Sync (2025-11-29)
+
+### Timezone Bug Fix
+
+**Problem:** Dates displayed incorrectly (e.g., "Monday, November 30" instead of "Tuesday, December 1")
+
+**Root Cause:** JavaScript's `new Date("YYYY-MM-DD")` interprets the date string as UTC midnight. In western timezones (e.g., PST = UTC-8), this displays as the previous day.
+
+```typescript
+// Wrong - interprets as UTC
+new Date("2025-12-02")  // → Mon Dec 01 2025 16:00:00 GMT-0800 (Pacific)
+
+// Correct - interprets as local midnight
+const [year, month, day] = "2025-12-02".split("-").map(Number);
+new Date(year, month - 1, day)  // → Tue Dec 02 2025 00:00:00 GMT-0800 (Pacific)
+```
+
+**Solution:** Parse YYYY-MM-DD strings manually to create local-timezone dates:
+
+```typescript
+function formatDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day); // Local midnight
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+```
+
+**Files Fixed:**
+1. `apps/web/modules/group-polls/views/group-polls-detail-view.tsx` - `formatDate()`
+2. `apps/web/modules/group-polls/components/HeatMap.tsx` - `formatDateHeading()`
+3. `apps/web/modules/group-polls/views/poll-response-view.tsx` - `formatDate()`
+
+### EventManager Integration for Calendar Sync
+
+**Goal:** Create Google Calendar events when booking from a poll.
+
+**Implementation:** Added to `packages/trpc/server/routers/viewer/groupPolls/book.handler.ts`:
+
+1. **Fetch Credentials:**
+   ```typescript
+   const organizer = await prisma.user.findUnique({
+     where: { id: ctx.user.id },
+     select: {
+       credentials: { select: credentialForCalendarServiceSelect },
+       destinationCalendar: true,
+       // ...
+     },
+   });
+   ```
+
+2. **Build CalendarEvent:**
+   ```typescript
+   const calendarEvent: CalendarEvent = {
+     type: poll.eventType.title,
+     title: booking.title,
+     description: poll.description || "",
+     startTime: startDateTime.toISOString(),
+     endTime: endDateTime.toISOString(),
+     organizer: organizerPerson,
+     attendees: attendeesForCalendar,
+     uid: booking.uid,
+     destinationCalendar: organizer.destinationCalendar ? [organizer.destinationCalendar] : null,
+   };
+   ```
+
+3. **Create Calendar Event:**
+   ```typescript
+   const credentialsWithDelegation = organizer.credentials.map((cred) => ({
+     ...cred,
+     delegatedTo: null,  // Required by CredentialForCalendarService type
+   }));
+
+   const eventManager = new EventManager({
+     credentials: credentialsWithDelegation,
+     destinationCalendar: organizer.destinationCalendar,
+   });
+
+   const calendarResults = await eventManager.create(calendarEvent);
+   ```
+
+4. **Store BookingReference:**
+   ```typescript
+   if (calendarResults?.referencesToCreate?.length) {
+     await prisma.bookingReference.createMany({
+       data: calendarResults.referencesToCreate.map((ref) => ({
+         bookingId: booking.id,
+         type: ref.type,
+         uid: ref.uid || "",
+         // ...
+       })),
+     });
+   }
+   ```
+
+**Key Learnings:**
+- `CalendarEvent.destinationCalendar` expects an array, not single object
+- `CredentialForCalendarService` requires `delegatedTo` field (set to `null` for group polls)
+- Wrap in try/catch - calendar sync is secondary to booking creation
+- Check server logs for "EventManager" messages to debug calendar integration

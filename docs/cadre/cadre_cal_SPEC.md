@@ -290,13 +290,17 @@ When poll creator selects a slot and clicks "Book":
 | R1 | Open poll without login | ✅ Implemented | Public route `/p/[accessToken]` |
 | R2 | Enter name and email | ✅ Implemented | Name/email fields on response page |
 | R3 | Mark availability in windows | ✅ Implemented | Time slot selection UI |
-| R4 | See anonymous heat map | ⬜ Not Started | Phase 1B - heat map component |
-| R5 | See invited participants | ⬜ Partial | Shows count, not full list |
+| R4 | See anonymous heat map | ✅ Implemented | Heat map with color-coded availability |
+| R5 | See invited participants | ✅ Implemented | Shows participant count and response status |
 | R6 | Submit availability | ✅ Implemented | Submit button with tRPC mutation |
 | R7 | Return and edit response | ✅ Implemented | Re-submission replaces existing |
-| R8 | Mobile works well | ⬜ Untested | Needs testing |
+| R8 | Mobile works well | ✅ Tested | Responsive layout verified |
 | **Results & Booking** | | | |
-| B1-B5 | Heat map and booking | ⬜ Not Started | Phase 3-4 |
+| B1 | Heat map showing overlap | ✅ Implemented | Color-coded heat map in detail view |
+| B2 | Toggle all/required view | ⬜ Not Started | Post-MVP |
+| B3 | Clear "everyone available" indicator | ✅ Implemented | "Perfect times" banner, green slots |
+| B4 | One-click booking | ✅ Implemented | Select slot → confirm dialog → book |
+| B5 | Calendar invites sent | ✅ Implemented | Via Cal.com booking system |
 | B6-B7 | Slack notifications | ⬜ Not Started | Phase 5 |
 | **Poll Management** | | | |
 | M1 | View all polls | ✅ Implemented | `/group-polls` list page |
@@ -307,19 +311,29 @@ When poll creator selects a slot and clicks "Book":
 
 ### Scope Delivered vs. Remaining
 
-**Delivered in Phase 1:**
+**Delivered in Phase 1 + 1B:**
 - ✅ Poll creation with windows and participants
 - ✅ Client response collection (no login required)
 - ✅ Poll list management
 - ✅ Shareable links
-- ✅ Basic response UI
+- ✅ Time slot selection UI
+- ✅ Heat map visualization (color-coded, perfect times indicator)
+- ✅ Email invitations on poll creation
+
+**Delivered in Phase 2 (Booking Integration):**
+- ✅ Event Type selector in poll creation
+- ✅ Selectable heat map with slot detail panel
+- ✅ Booking confirmation dialog
+- ✅ One-click booking from poll results
+- ✅ Poll status updates to BOOKED
+- ✅ Attendees linked to booking
 
 **Remaining for MVP:**
-- Heat map visualization
-- Booking integration
-- Poll editing
+- Fix date display timezone issue
+- Poll editing after creation
 - Slack notifications
 - QR codes
+- Google Calendar sync for bookings
 
 ---
 

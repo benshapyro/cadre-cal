@@ -22,6 +22,7 @@ import { showToast } from "@calcom/ui/components/toast";
 const _formSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
+  eventTypeId: z.number().int().positive("Event type is required"),
   durationMinutes: z.number().int().min(15).max(480),
   dateRangeStart: z.date(),
   dateRangeEnd: z.date(),
@@ -55,10 +56,14 @@ export default function GroupPollsCreateView() {
   const { t: _t } = useLocale();
   const router = useRouter();
 
+  // Fetch user's event types
+  const { data: eventTypesData, isLoading: eventTypesLoading } = trpc.viewer.eventTypes.list.useQuery();
+
   const form = useForm<FormValues>({
     defaultValues: {
       title: "",
       description: "",
+      eventTypeId: 0,
       durationMinutes: 60,
       dateRangeStart: new Date(),
       dateRangeEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks from now
@@ -70,6 +75,22 @@ export default function GroupPollsCreateView() {
     control: form.control,
     name: "participants",
   });
+
+  // Build event type options from fetched data
+  // The list query returns an array of event types directly
+  const eventTypeOptions = (eventTypesData || []).map((et) => ({
+    value: et.id,
+    label: `${et.title} (${et.length} min)`,
+  }));
+
+  // Auto-fill duration when event type changes
+  const handleEventTypeChange = (eventTypeId: number) => {
+    form.setValue("eventTypeId", eventTypeId);
+    const selectedEventType = (eventTypesData || []).find((et) => et.id === eventTypeId);
+    if (selectedEventType) {
+      form.setValue("durationMinutes", selectedEventType.length);
+    }
+  };
 
   const createMutation = trpc.viewer.groupPolls.create.useMutation({
     onSuccess: (data) => {
@@ -103,6 +124,7 @@ export default function GroupPollsCreateView() {
     createMutation.mutate({
       title: data.title,
       description: data.description,
+      eventTypeId: data.eventTypeId,
       durationMinutes: data.durationMinutes,
       dateRangeStart: data.dateRangeStart,
       dateRangeEnd: data.dateRangeEnd,
@@ -130,6 +152,21 @@ export default function GroupPollsCreateView() {
             {...form.register("description")}
             rows={3}
           />
+
+          <SelectField
+            label="Event Type"
+            placeholder={eventTypesLoading ? "Loading event types..." : "Select an event type"}
+            options={eventTypeOptions}
+            value={eventTypeOptions.find((opt) => opt.value === form.watch("eventTypeId"))}
+            onChange={(opt) => opt && handleEventTypeChange(opt.value)}
+            required
+            isDisabled={eventTypesLoading || eventTypeOptions.length === 0}
+          />
+          {!eventTypesLoading && eventTypeOptions.length === 0 && (
+            <p className="text-attention text-sm">
+              You need to create an event type first before creating a poll.
+            </p>
+          )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
@@ -219,7 +256,10 @@ export default function GroupPollsCreateView() {
         <Button type="button" color="secondary" onClick={() => router.push("/group-polls")}>
           Cancel
         </Button>
-        <Button type="submit" loading={createMutation.isPending}>
+        <Button
+          type="submit"
+          loading={createMutation.isPending}
+          disabled={!form.watch("eventTypeId") || eventTypesLoading}>
           Create Poll
         </Button>
       </div>

@@ -1140,11 +1140,17 @@ const cacheRules = {
 
 ## Next Steps
 
-1. **Explore Booking Flow** - Understand end-to-end booking to adapt for poll → booking conversion
-2. **Study Availability Logic** - packages/features/calendars/, availability checking
-3. **Review Teams Features** - Permission patterns, team member selection
-4. **Examine UI Components** - packages/ui/ for reusable components
-5. **Test Database Queries** - Prisma Studio to understand relationships
+**✅ Completed (as of 2025-11-28):**
+1. ~~Explore Booking Flow~~ - Implemented poll → booking conversion in `book.handler.ts`
+2. ~~Study Availability Logic~~ - Heat map calculation using response data
+3. ~~Examine UI Components~~ - Using Cal.com UI library throughout
+4. ~~Test Database Queries~~ - Full CRUD operations working
+
+**Remaining:**
+1. **Calendar Integration** - Connect booking to EventManager for Google Calendar sync
+2. **Slack Notifications** - Implement must-have responded, all responded alerts
+3. **QR Code Generation** - Add to share dialog
+4. **Poll Editing** - Allow adding windows/participants after creation
 
 ---
 

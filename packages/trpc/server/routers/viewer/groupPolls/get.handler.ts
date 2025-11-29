@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { calculateHeatMap } from "@calcom/features/group-polls";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
@@ -18,6 +19,21 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
       id: input.id,
     },
     include: {
+      eventType: {
+        select: {
+          id: true,
+          title: true,
+          length: true,
+          slug: true,
+        },
+      },
+      booking: {
+        select: {
+          id: true,
+          uid: true,
+          status: true,
+        },
+      },
       windows: {
         orderBy: [{ date: "asc" }, { startTime: "asc" }],
         select: {
@@ -28,13 +44,8 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
         },
       },
       participants: {
-        select: {
-          id: true,
-          type: true,
-          name: true,
-          email: true,
-          hasResponded: true,
-          accessToken: true,
+        include: {
+          responses: true,
         },
       },
     },
@@ -60,6 +71,36 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
     return dt.toISOString().slice(11, 16); // Extract HH:mm from ISO string
   };
 
+  // Format windows for heat map calculation
+  const formattedWindows = poll.windows.map((w) => ({
+    id: w.id,
+    date: w.date,
+    startTime: formatTime(w.startTime),
+    endTime: formatTime(w.endTime),
+  }));
+
+  // Collect all responses from all participants
+  const allResponses = poll.participants.flatMap((p) =>
+    p.responses.map((r) => ({
+      id: r.id,
+      participantId: p.id,
+      date: r.date.toISOString().split("T")[0], // YYYY-MM-DD
+      startTime: formatTime(r.startTime),
+      endTime: formatTime(r.endTime),
+    }))
+  );
+
+  // Format participants for heat map calculation
+  const formattedParticipants = poll.participants.map((p) => ({
+    id: p.id,
+    name: p.name,
+    type: p.type as "CADRE_REQUIRED" | "CADRE_OPTIONAL" | "CLIENT",
+    hasResponded: p.hasResponded,
+  }));
+
+  // Calculate heat map
+  const heatMap = calculateHeatMap(formattedWindows, allResponses, formattedParticipants);
+
   // Return a clean object to avoid Date serialization issues
   return {
     id: poll.id,
@@ -70,12 +111,38 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
     dateRangeStart: poll.dateRangeStart.toISOString(),
     dateRangeEnd: poll.dateRangeEnd.toISOString(),
     createdAt: poll.createdAt.toISOString(),
+    eventType: poll.eventType
+      ? {
+          id: poll.eventType.id,
+          title: poll.eventType.title,
+          length: poll.eventType.length,
+          slug: poll.eventType.slug,
+        }
+      : null,
+    booking: poll.booking
+      ? {
+          id: poll.booking.id,
+          uid: poll.booking.uid,
+          status: poll.booking.status,
+        }
+      : null,
+    selectedDate: poll.selectedDate?.toISOString() || null,
+    selectedStartTime: poll.selectedStartTime ? formatTime(poll.selectedStartTime) : null,
+    selectedEndTime: poll.selectedEndTime ? formatTime(poll.selectedEndTime) : null,
     windows: poll.windows.map((w) => ({
       id: w.id,
       date: w.date.toISOString(),
       startTime: formatTime(w.startTime),
       endTime: formatTime(w.endTime),
     })),
-    participants: poll.participants,
+    participants: poll.participants.map((p) => ({
+      id: p.id,
+      type: p.type,
+      name: p.name,
+      email: p.email,
+      hasResponded: p.hasResponded,
+      accessToken: p.accessToken,
+    })),
+    heatMap,
   };
 };

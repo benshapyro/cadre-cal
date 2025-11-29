@@ -756,22 +756,29 @@ The implemented schema closely follows the design with these refinements:
 
 3. **API Route Handlers:** Cal.com requires explicit route handlers in `apps/web/app/api/trpc/[trpc]/route.ts` for endpoint routing
 
-### Manual Testing Completed (Phase 1B)
+### Manual Testing Completed (Phase 1B + Phase 2)
 Full manual browser testing of the Group Polls flow:
 - Create poll → View poll list → Share link → Public response page → Submit availability → View results
 - All core flows verified working
+- **Phase 2 Booking Flow (2025-11-28):** Create poll with event type → Submit responses → Select slot from heat map → Confirm booking → Poll status changes to BOOKED → Booking record created with attendees
 
-### Automated Testing (Not Yet Implemented)
-- Unit tests for heat map calculation, slot validation
-- Integration tests for API flows
-- E2E test scripts (Playwright)
+### Automated Testing (Phase 1B)
+- ✅ Unit tests for heat map calculation (15 passing)
+- ✅ E2E tests (Playwright - 6 passing, 1 skipped)
+  - Poll creation, list view, detail view, deletion, share link copy
+
+### What's Implemented
+- ✅ Heat map visualization (HeatMapCell, HeatMapLegend, HeatMap components)
+- ✅ Booking from poll (`book.handler.ts` - creates Cal.com booking)
+- ✅ Email invitations (GroupPollInviteEmail template)
+- ✅ Event Type integration (selector in create form, linked to booking)
 
 ### What's Not Yet Implemented
-- Team calendar availability fetch (getTeamAvailability)
-- Heat map visualization
-- Booking from poll (bookFromPoll)
-- Slack notifications
+- Team calendar availability fetch (getTeamAvailability) - shows proposed windows, not live busy times
+- Slack notifications (must-have responded, all responded)
 - QR code generation
+- Poll editing after creation
+- Google Calendar sync for created bookings (booking creates record, but doesn't sync to Google Calendar)
 
 ---
 

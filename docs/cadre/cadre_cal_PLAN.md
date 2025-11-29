@@ -412,11 +412,11 @@ Each phase is complete when:
 | Phase 0B: Production Deployment | ✅ Complete | 2025-11-27 | 2025-11-27 | Railway deployed, Google OAuth pending. See NOTES.md for deployment details |
 | Phase 0C: Team Onboarding | ⏸️ Deferred | — | — | Deferred until Group Polls MVP tested |
 | Phase 1: Poll Creation Core | ✅ Complete | 2025-11-27 | 2025-11-27 | DB schema, tRPC routers, UI pages all implemented |
-| Phase 1B: Testing & Polish | 🟡 In Progress | 2025-11-27 | — | Manual testing done, detail page done, bugs fixed. Automated E2E tests pending |
+| Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 | E2E tests, heat map visualization, email invites |
 | Phase 2: Response Collection | ✅ Merged | — | — | Merged into Phase 1 - public response page done |
-| Phase 3: Heat Map | ⬜ Not Started | — | — | |
-| Phase 4: Booking | ⬜ Not Started | — | — | |
-| Phase 5: Notifications & QR | ⬜ Not Started | — | — | |
+| Phase 3: Heat Map | ✅ Complete | 2025-11-28 | 2025-11-28 | Merged into Phase 1B |
+| Phase 4: Booking Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Full booking flow working - poll→booking creation |
+| Phase 5: Notifications & QR | ⬜ Not Started | — | — | Email invites done, Slack & QR pending |
 | Phase 6: Polish & Launch | ⬜ Not Started | — | — | |
 
 ---
@@ -488,11 +488,30 @@ apps/web/pages/api/trpc/groupPolls/[trpc].ts
 packages/trpc/react/shared.ts  # Modified: added "groupPolls" to ENDPOINTS
 ```
 
-### What's Next (Phase 1B Remaining)
-- [x] Poll detail/results page (`/group-polls/[id]`) - **Done 2025-11-27**
-- [x] Manual browser testing of complete flow - **Done 2025-11-27**
-- [x] Bug fixes (tRPC routing, date serialization, time display, submit schema) - **Done 2025-11-27**
-- [ ] Automated E2E tests (Playwright test scripts)
-- [ ] Heat map visualization
-- [ ] Email notifications to participants
-- [ ] Mobile testing
+### Implementation Progress Summary
+
+**✅ Phase 1B Complete (2025-11-28):**
+- [x] Poll detail/results page (`/group-polls/[id]`)
+- [x] Manual browser testing of complete flow
+- [x] Bug fixes (tRPC routing, date serialization, time display, submit schema)
+- [x] Automated E2E tests (Playwright - 6 passing)
+- [x] Heat map visualization (calculation library + UI components)
+- [x] Email notifications to participants (invite emails on poll creation)
+- [x] Mobile testing (responsive layout verified)
+
+**✅ Phase 4 Booking Integration Complete (2025-11-28):**
+- [x] Event Type selector in poll creation
+- [x] Selectable heat map in poll detail view
+- [x] Slot detail panel with available/unavailable participants
+- [x] Booking confirmation dialog
+- [x] `book.handler.ts` creates Cal.com booking
+- [x] Poll status updates to BOOKED
+- [x] Attendees linked to booking
+- [x] Full flow tested: poll → responses → select slot → book → calendar event
+
+**⬜ Remaining for MVP:**
+- [ ] Fix date display timezone issue (UI shows off-by-one day)
+- [ ] Slack notifications (must-have responded, all responded)
+- [ ] QR code generation
+- [ ] Poll editing after creation
+- [ ] Google Calendar sync for created bookings

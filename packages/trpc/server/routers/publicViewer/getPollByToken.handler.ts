@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { calculateHeatMap } from "@calcom/features/group-polls";
 import { prisma } from "@calcom/prisma";
 
 import type { TGetPollByTokenSchema } from "./groupPollResponse.schema";
@@ -21,11 +22,8 @@ export default async function handler({ input }: GetPollByTokenOptions) {
             orderBy: [{ date: "asc" }, { startTime: "asc" }],
           },
           participants: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              hasResponded: true,
+            include: {
+              responses: true,
             },
           },
         },
@@ -50,13 +48,50 @@ export default async function handler({ input }: GetPollByTokenOptions) {
     });
   }
 
-  // Calculate anonymous heat map (how many people are available per slot)
-  // This will be computed on the frontend based on the participant responses
-  // Here we just return the aggregate counts without identifying who
-
   // Helper to format time from DateTime to HH:mm string
   const formatTime = (dt: Date): string => {
     return dt.toISOString().slice(11, 16); // Extract HH:mm from ISO string
+  };
+
+  // Format windows for heat map calculation
+  const formattedWindows = poll.windows.map((w) => ({
+    id: w.id,
+    date: w.date,
+    startTime: formatTime(w.startTime),
+    endTime: formatTime(w.endTime),
+  }));
+
+  // Collect all responses from all participants
+  const allResponses = poll.participants.flatMap((p) =>
+    p.responses.map((r) => ({
+      id: r.id,
+      participantId: p.id,
+      date: r.date.toISOString().split("T")[0], // YYYY-MM-DD
+      startTime: formatTime(r.startTime),
+      endTime: formatTime(r.endTime),
+    }))
+  );
+
+  // Format participants for heat map calculation
+  const formattedParticipants = poll.participants.map((p) => ({
+    id: p.id,
+    name: p.name,
+    type: p.type as "CADRE_REQUIRED" | "CADRE_OPTIONAL" | "CLIENT",
+    hasResponded: p.hasResponded,
+  }));
+
+  // Calculate heat map
+  const heatMap = calculateHeatMap(formattedWindows, allResponses, formattedParticipants);
+
+  // Create anonymous heat map (strip participant names for privacy)
+  const anonymousHeatMap = {
+    ...heatMap,
+    cells: heatMap.cells.map((c) => ({ ...c, participantNames: [] })),
+    stats: {
+      ...heatMap.stats,
+      optimalSlots: heatMap.stats.optimalSlots.map((s) => ({ ...s, participantNames: [] })),
+      perfectSlots: heatMap.stats.perfectSlots.map((s) => ({ ...s, participantNames: [] })),
+    },
   };
 
   return {
@@ -95,5 +130,6 @@ export default async function handler({ input }: GetPollByTokenOptions) {
         endTime: formatTime(r.endTime),
       })),
     },
+    heatMap: anonymousHeatMap,
   };
 }

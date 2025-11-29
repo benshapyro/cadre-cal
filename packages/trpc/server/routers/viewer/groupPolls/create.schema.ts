@@ -5,6 +5,7 @@ import { ParticipantType } from "@calcom/prisma/enums";
 export const ZCreateGroupPollSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
+  eventTypeId: z.number().int().positive("Event type is required"),
   durationMinutes: z.number().int().min(15).max(480).default(60),
   dateRangeStart: z.date(),
   dateRangeEnd: z.date(),

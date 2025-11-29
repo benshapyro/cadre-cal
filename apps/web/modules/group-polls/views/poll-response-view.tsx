@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 
+import type { HeatMapCell } from "@calcom/features/group-polls";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { RouterOutputs } from "@calcom/trpc/react";
 import { trpc } from "@calcom/trpc/react";
@@ -11,6 +12,8 @@ import { Button } from "@calcom/ui/components/button";
 import { TextField, EmailField } from "@calcom/ui/components/form";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { showToast } from "@calcom/ui/components/toast";
+
+import { HeatMap } from "../components";
 
 type PollWindow = RouterOutputs["viewer"]["public"]["getPollByToken"]["poll"]["windows"][number];
 
@@ -24,8 +27,12 @@ interface TimeSlot {
   endTime: string;
 }
 
+// Parse YYYY-MM-DD as local date (not UTC) to avoid off-by-one day bug
 function formatDate(date: Date | string): string {
-  const d = new Date(date);
+  const dateStr = date instanceof Date ? date.toISOString().split("T")[0] : String(date);
+  // Parse YYYY-MM-DD as local date, not UTC
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day); // Local midnight
   return d.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
@@ -43,7 +50,8 @@ function formatTime(time: string): string {
 }
 
 function getSlotKey(date: string, startTime: string, endTime: string): string {
-  return `${new Date(date).toISOString().split("T")[0]}-${startTime}-${endTime}`;
+  // Date is already in YYYY-MM-DD format, no need to convert via Date object
+  return `${date}-${startTime}-${endTime}`;
 }
 
 export default function PollResponseView({ accessToken }: PollResponseViewProps) {
@@ -96,6 +104,11 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
       newSelected.add(slotKey);
     }
     setSelectedSlots(newSelected);
+  };
+
+  const handleHeatMapSlotSelect = (cell: HeatMapCell) => {
+    const slotKey = `${cell.date}-${cell.startTime}-${cell.endTime}`;
+    toggleSlot(slotKey);
   };
 
   const handleSubmit = () => {
@@ -218,39 +231,49 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
       <div className="border-subtle bg-default mb-6 rounded-lg border p-6">
         <h2 className="text-emphasis mb-4 text-lg font-medium">Select Available Times</h2>
         <p className="text-subtle mb-4 text-sm">
-          Click on the time slots that work for you. Selected times will be highlighted.
+          Click on the time slots that work for you. Colors show how many others are available.
         </p>
 
-        <div className="space-y-4">
-          {Array.from(windowsByDate.entries()).map(([dateKey, windows]) => (
-            <div key={dateKey} className="border-subtle rounded-md border p-4">
-              <h3 className="text-emphasis mb-3 font-medium">{formatDate(dateKey)}</h3>
-              <div className="flex flex-wrap gap-2">
-                {windows.map((window) => {
-                  const slotKey = getSlotKey(window.date, window.startTime, window.endTime);
-                  const isSelected = selectedSlots.has(slotKey);
+        {data.heatMap ? (
+          <HeatMap
+            data={data.heatMap}
+            showParticipantNames={false}
+            selectable={true}
+            selectedSlots={selectedSlots}
+            onSlotSelect={handleHeatMapSlotSelect}
+          />
+        ) : (
+          <div className="space-y-4">
+            {Array.from(windowsByDate.entries()).map(([dateKey, windows]) => (
+              <div key={dateKey} className="border-subtle rounded-md border p-4">
+                <h3 className="text-emphasis mb-3 font-medium">{formatDate(dateKey)}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {windows.map((window) => {
+                    const slotKey = getSlotKey(window.date, window.startTime, window.endTime);
+                    const isSelected = selectedSlots.has(slotKey);
 
-                  return (
-                    <button
-                      key={window.id}
-                      type="button"
-                      data-testid="time-slot-button"
-                      onClick={() => toggleSlot(slotKey)}
-                      className={`rounded-md border px-3 py-2 text-sm transition-colors ${
-                        isSelected
-                          ? "border-inverted bg-inverted text-inverted"
-                          : "border-subtle bg-default text-default hover:bg-subtle"
-                      }`}>
-                      {formatTime(window.startTime)} - {formatTime(window.endTime)}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={window.id}
+                        type="button"
+                        data-testid="time-slot-button"
+                        onClick={() => toggleSlot(slotKey)}
+                        className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                          isSelected
+                            ? "border-inverted bg-inverted text-inverted"
+                            : "border-subtle bg-default text-default hover:bg-subtle"
+                        }`}>
+                        {formatTime(window.startTime)} - {formatTime(window.endTime)}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {windowsByDate.size === 0 && (
+        {windowsByDate.size === 0 && !data.heatMap && (
           <p className="text-subtle text-center">No time slots available for this poll.</p>
         )}
       </div>
