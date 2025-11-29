@@ -404,5 +404,6 @@ See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.
 ## Resources
 
 - [Documentation](docs/) - Specs, design, and plan
+- [Backlog](docs/cadre/BACKLOG.md) - Production issues and improvements
 - [Cal.com README](cal.com/README.md) - Upstream docs
 - [Git History](git log) - What changed and why
