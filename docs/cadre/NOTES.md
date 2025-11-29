@@ -144,7 +144,7 @@ cd cal.com && yarn db-studio
 
 **Railway Project Details:**
 - **Project name:** perfect-strength
-- **URL:** https://web-production-7adc5.up.railway.app
+- **URL:** https://cal.cadreai.com (custom domain)
 - **Services:** web (Cal.com), Postgres
 
 ### Critical: Railway Configuration for Cal.com
@@ -205,8 +205,8 @@ DATABASE_URL=${{Postgres.DATABASE_URL}}
 DATABASE_DIRECT_URL=${{Postgres.DATABASE_URL}}
 
 # App URLs
-NEXT_PUBLIC_WEBAPP_URL=https://web-production-7adc5.up.railway.app
-NEXTAUTH_URL=https://web-production-7adc5.up.railway.app
+NEXT_PUBLIC_WEBAPP_URL=https://cal.cadreai.com
+NEXTAUTH_URL=https://cal.cadreai.com
 
 # Secrets
 NEXTAUTH_SECRET=<your-secret>  # generate with: openssl rand -base64 32
@@ -258,7 +258,7 @@ GOOGLE_API_CREDENTIALS={"web":{"client_id":"...","client_secret":"...","redirect
 ### Production Google OAuth Setup
 
 - **GCP Project:** "Cal Production" (separate from local "Cal Local")
-- **Redirect URI:** `https://web-production-7adc5.up.railway.app/api/integrations/googlecalendar/callback`
+- **Redirect URI:** `https://cal.cadreai.com/api/integrations/googlecalendar/callback`
 - **Format for GOOGLE_API_CREDENTIALS:**
   ```json
   {"web":{"client_id":"...","client_secret":"...","redirect_uris":["https://...callback"]}}
@@ -640,4 +640,117 @@ import { Select } from "@calcom/ui/components/form";
     </div>
   )}
 />
+```
+
+---
+
+## Phase 1C: Code Quality & Production Hardening (2025-11-29)
+
+### Timezone Strategy
+
+**Key Principle:** UTC for storage, local time for display and Cal.com bookings.
+
+```typescript
+// Storage layer (timeUtils.ts) - UTC
+parseTimeString("09:30")  // → Date with UTC hours/minutes
+parseDateString("2025-12-01")  // → Date at UTC midnight
+formatTime(date)  // → "HH:MM" from UTC
+formatDateISO(date)  // → "YYYY-MM-DD" from UTC
+
+// Display layer (dateFormatting.ts) - Local time
+formatDateForDisplay("2025-12-01")  // → "Mon, Dec 1" in local timezone
+
+// Booking creation (book.handler.ts) - Local time
+combineDateAndTime("2025-12-01", "09:30")  // → Local date for Cal.com
+```
+
+**Why?** Cal.com's booking system expects local time. The poll storage uses UTC for consistency.
+
+### Structured Logging Pattern
+
+```typescript
+import logger from "@calcom/lib/logger";
+const log = logger.getSubLogger({ prefix: ["groupPolls", "handlerName"] });
+
+// Usage
+log.info("Operation completed", { pollId, userId, details });
+log.warn("Partial failure", { context, error: error.message });
+log.error("Operation failed", { fullContext });
+```
+
+### Race Condition Prevention
+
+```typescript
+// In book.handler.ts - Use Prisma transaction with double-check
+const { booking, updatedPoll } = await prisma.$transaction(async (tx) => {
+  // Re-check poll isn't already booked (prevents race condition)
+  const freshPoll = await tx.groupPoll.findUnique({
+    where: { id: pollId },
+    select: { bookingId: true },
+  });
+
+  if (freshPoll?.bookingId) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "This poll was just booked by another request.",
+    });
+  }
+
+  // Create booking and update poll atomically
+  // ...
+});
+```
+
+### Calendar Retry Logic
+
+```typescript
+const CALENDAR_RETRY_ATTEMPTS = 2;
+const CALENDAR_RETRY_DELAY_MS = 1000;
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  context: { pollId: number; bookingId: number }
+): Promise<T> {
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= CALENDAR_RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < CALENDAR_RETRY_ATTEMPTS) {
+        log.warn("Calendar operation failed, retrying", {
+          ...context, attempt, error: lastError.message
+        });
+        await new Promise(r => setTimeout(r, CALENDAR_RETRY_DELAY_MS));
+      }
+    }
+  }
+  throw lastError;
+}
+```
+
+### Test Coverage
+
+**Unit Tests (39 total):**
+- `packages/features/group-polls/lib/__tests__/timeUtils.test.ts` - 24 tests
+- `packages/features/group-polls/lib/__tests__/heatMapCalculation.test.ts` - 15 tests
+
+**E2E Tests (7 total):**
+- `apps/web/playwright/group-polls.e2e.ts`
+- Poll CRUD, public response, booking flow
+
+### ARIA Accessibility
+
+```typescript
+// HeatMapCell.tsx
+const ariaLabel = isSelected
+  ? `Time slot ${cell.startTime} to ${cell.endTime}, ${cell.responseCount} of ${cell.totalParticipants} available, selected`
+  : `Time slot ${cell.startTime} to ${cell.endTime}, ${cell.responseCount} of ${cell.totalParticipants} available`;
+
+<button
+  aria-label={ariaLabel}
+  aria-pressed={isSelected}
+  data-testid="time-slot-button"
+  // ...
+>
 ```

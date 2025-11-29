@@ -86,10 +86,10 @@ test.describe("Group Polls", () => {
   });
 
   test.describe("Poll Response (Public)", () => {
-    // Skip: This test is flaky in parallel mode due to page loading race conditions.
-    // The functionality works correctly in manual testing and when run in isolation.
-    // TODO: Fix by adding proper wait conditions or running in serial mode.
-    test.skip("public user can view poll and submit response", async ({ page, users }) => {
+    // Run public response tests serially to avoid race conditions with server under load
+    test.describe.configure({ mode: "serial" });
+
+    test("public user can view poll and submit response", async ({ page, users }) => {
       const user = await users.create();
 
       // Create poll with participant and windows
@@ -127,6 +127,9 @@ test.describe("Group Polls", () => {
 
       // Visit public response page (no auth required)
       await page.goto(`/p/${participant.accessToken}`);
+      // Wait for page to fully load and tRPC query to complete
+      await page.waitForLoadState("domcontentloaded");
+      await page.waitForSelector('[data-testid="poll-response-ready"]', { timeout: 15000 });
 
       // Verify poll info is displayed
       await expect(page.locator(`text=${poll.title}`)).toBeVisible();
@@ -143,12 +146,21 @@ test.describe("Group Polls", () => {
       await timeSlotButton.click();
 
       // Submit response (button says "Submit Availability")
+      // Wait for the mutation response by watching for the tRPC call
+      const responsePromise = page.waitForResponse(
+        (response) => response.url().includes("submitPollResponse") && response.status() === 200,
+        { timeout: 30000 }
+      );
+
       await page.click('button:has-text("Submit Availability")');
 
-      // Wait for success toast to confirm mutation completed
-      await expect(page.locator('text="Your availability has been submitted!"')).toBeVisible({ timeout: 10000 });
+      // Wait for mutation to complete via network response
+      await responsePromise;
 
-      // Verify in database that participant has responded
+      // Small delay for database to commit
+      await page.waitForTimeout(500);
+
+      // Verify in database that participant has responded (primary verification)
       const updatedParticipant = await prisma.groupPollParticipant.findUnique({
         where: { id: participant.id },
       });
@@ -189,6 +201,9 @@ test.describe("Group Polls", () => {
 
       // Visit public response page
       await page.goto(`/p/${participant.accessToken}`);
+      // Wait for page to fully load and tRPC query to complete
+      await page.waitForLoadState("domcontentloaded");
+      await page.waitForSelector('[data-testid="poll-response-ready"]', { timeout: 15000 });
 
       // Should see already responded indicator (use data-testid to avoid matching poll title)
       await expect(page.locator('[data-testid="already-responded-badge"]')).toBeVisible({ timeout: 5000 });

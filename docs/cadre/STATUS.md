@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
-**Last Updated:** 2025-11-28
-**Current Phase:** Phase 8 Complete - All Features Done!
-**Overall Status:** 🟢 Feature Complete - Ready for Production Launch
+**Last Updated:** 2025-11-29
+**Current Phase:** Phase 1C Complete - Code Quality & Polish
+**Overall Status:** 🟢 Production Ready - All Features + Code Quality Complete
 
 ---
 
@@ -54,7 +54,7 @@
 - 🔄 Google OAuth for production (credentials ready, needs to be added to Railway)
 
 **Railway Details:**
-- URL: https://web-production-7adc5.up.railway.app
+- URL: https://cal.cadreai.com
 - Project: perfect-strength
 - Services: web (Cal.com), Postgres
 - Config: railway.toml in repo root
@@ -272,6 +272,30 @@
 
 **🎉 All Features Complete!**
 
+### ✅ Phase 1C: Code Quality & Polish (2025-11-29)
+
+**Production Hardening (15 items completed):**
+
+1. ✅ **Race Condition Prevention** - Wrapped booking creation in Prisma `$transaction` with double-check pattern
+2. ✅ **Time Validation** - Added startTime < endTime validation in book.handler.ts
+3. ✅ **Structured Logging** - Replaced console.log with `logger.getSubLogger()` across all handlers
+4. ✅ **Slack Error Context** - Added pollId, pollTitle to Slack notification error logs
+5. ✅ **Timezone Strategy Documented** - Added JSDoc comments explaining UTC vs local time usage
+6. ✅ **Calendar Retry Logic** - Added `withRetry()` helper (2 attempts, 1s delay) for calendar operations
+7. ✅ **Schema Validation** - Added `.refine()` for dateRangeStart <= dateRangeEnd in create/update schemas
+8. ✅ **ARIA Labels** - Added aria-label and aria-pressed to HeatMapCell and poll-response-view buttons
+9. ✅ **JSDoc Comments** - Added documentation to timeUtils.ts and combineDateAndTime function
+10. ✅ **Email Failure Handling** - Added Promise.allSettled for email sending with failure counts logged
+11. ✅ **Unit Tests** - Created timeUtils.test.ts with 24 tests for parse/format functions
+12. ✅ **Constants Extraction** - Extracted CALENDAR_RETRY_ATTEMPTS and CALENDAR_RETRY_DELAY_MS
+13. ✅ **N+1 Query Review** - Verified update handler uses optimal query patterns
+14. ✅ **Error Messages** - Verified all TRPCError messages are clear and actionable
+15. ✅ **E2E Test Stability** - Fixed flaky public poll test with proper waitForLoadState
+
+**Test Coverage:**
+- ✅ 39 unit tests passing (24 timeUtils + 15 heatMapCalculation)
+- ✅ 7 E2E tests passing (poll CRUD, public response, booking flow)
+
 **Deferred:**
 - Phase 0B: Google OAuth on Railway (can add later)
 - Phase 0C: Team Onboarding (deferred until after launch)
@@ -305,7 +329,7 @@
 ## What's Blocked/Pending
 
 - 🔄 Google OAuth credentials need to be added to Railway (have credentials, just need to add)
-- ⏸️ Custom domain setup (cal.cadre.ai) - can add later via Railway settings
+- ✅ Custom domain setup (cal.cadreai.com) - live with SSL
 - ⏸️ Team member list for onboarding - deferred until Phase 0C
 
 ## Current Environment
@@ -358,6 +382,7 @@ git status
 | Phase 0C: Team Onboarding | ⬜ Deferred | — | — |
 | Phase 1: Group Polls Core | ✅ Complete | 2025-11-27 | 2025-11-27 |
 | Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
+| Phase 1C: Code Quality & Polish | ✅ Complete | 2025-11-29 | 2025-11-29 |
 | Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
 | Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 |

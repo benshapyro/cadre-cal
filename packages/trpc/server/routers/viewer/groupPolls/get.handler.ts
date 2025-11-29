@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 
-import { calculateHeatMap } from "@calcom/features/group-polls";
 import { expirePollIfOverdue } from "@calcom/features/group-polls/lib/expirePolls";
+import { calculateBothHeatMaps } from "@calcom/features/group-polls/lib/heatMapUtils";
+import { formatTime } from "@calcom/features/group-polls/lib/timeUtils";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
@@ -70,41 +71,8 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
     });
   }
 
-  // Helper to format time from DateTime to HH:mm string
-  const formatTime = (dt: Date): string => {
-    return dt.toISOString().slice(11, 16); // Extract HH:mm from ISO string
-  };
-
-  // Format windows for heat map calculation
-  const formattedWindows = poll.windows.map((w) => ({
-    id: w.id,
-    date: w.date,
-    startTime: formatTime(w.startTime),
-    endTime: formatTime(w.endTime),
-  }));
-
-  // Collect all responses from all participants
-  const allResponses = poll.participants.flatMap((p) =>
-    p.responses.map((r) => ({
-      id: r.id,
-      participantId: p.id,
-      date: r.date.toISOString().split("T")[0], // YYYY-MM-DD
-      startTime: formatTime(r.startTime),
-      endTime: formatTime(r.endTime),
-    }))
-  );
-
-  // Format participants for heat map calculation
-  const formattedParticipants = poll.participants.map((p) => ({
-    id: p.id,
-    name: p.name,
-    type: p.type as "CADRE_REQUIRED" | "CADRE_OPTIONAL" | "CLIENT",
-    hasResponded: p.hasResponded,
-  }));
-
-  // Calculate heat maps
-  const heatMap = calculateHeatMap(formattedWindows, allResponses, formattedParticipants);
-  const heatMapRequired = calculateHeatMap(formattedWindows, allResponses, formattedParticipants, "CADRE_REQUIRED");
+  // Calculate heat maps using shared utility
+  const { heatMap, heatMapRequired } = calculateBothHeatMaps(poll.windows, poll.participants);
 
   // Return a clean object to avoid Date serialization issues
   return {

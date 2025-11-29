@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { HeatMapCell as HeatMapCellData } from "@calcom/features/group-polls";
+import {
+  formatDateForDisplay,
+  getSlotKey,
+  safeString,
+} from "@calcom/features/group-polls/lib/dateFormatting";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { trpc } from "@calcom/trpc/react";
 import { Button } from "@calcom/ui/components/button";
@@ -16,34 +21,9 @@ interface GroupPollsDetailViewProps {
   pollId: number;
 }
 
-// Helper to safely format dates - parses YYYY-MM-DD as local date (not UTC)
-const formatDate = (date: unknown, options?: Intl.DateTimeFormatOptions): string => {
-  try {
-    if (!date) return "N/A";
-    // Convert to YYYY-MM-DD string first
-    const dateStr = date instanceof Date ? date.toISOString().split("T")[0] : String(date);
-    // Parse YYYY-MM-DD as local date, not UTC
-    // new Date("2025-12-01") interprets as UTC midnight, causing off-by-one in local timezone
-    const [year, month, day] = dateStr.split("-").map(Number);
-    const d = new Date(year, month - 1, day); // Local midnight
-    if (isNaN(d.getTime())) return String(date);
-    return d.toLocaleDateString(undefined, options);
-  } catch {
-    return "Invalid date";
-  }
-};
-
-// Ensure value is a renderable string
-const safeString = (value: unknown): string => {
-  if (value === null || value === undefined) return "";
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
 // Helper to get unique cell key for heat map selection
 function getCellKey(cell: HeatMapCellData): string {
-  return `${cell.date}-${cell.startTime}-${cell.endTime}`;
+  return getSlotKey(cell.date, cell.startTime, cell.endTime);
 }
 
 export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewProps) {
@@ -161,10 +141,10 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
           </div>
           <div>
             <span className="font-medium">Date Range:</span>{" "}
-            {formatDate(poll.dateRangeStart)} - {formatDate(poll.dateRangeEnd)}
+            {formatDateForDisplay(poll.dateRangeStart)} - {formatDateForDisplay(poll.dateRangeEnd)}
           </div>
           <div>
-            <span className="font-medium">Created:</span> {formatDate(poll.createdAt)}
+            <span className="font-medium">Created:</span> {formatDateForDisplay(poll.createdAt)}
           </div>
           <div>
             <span className="font-medium">Responses:</span>{" "}
@@ -186,7 +166,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
           <div className="mt-4 rounded-md bg-success p-4 text-success">
             <div className="font-medium">Booking Created!</div>
             <div className="text-sm">
-              Scheduled for {formatDate(poll.selectedDate, { weekday: "long", month: "long", day: "numeric" })}{" "}
+              Scheduled for {formatDateForDisplay(poll.selectedDate, { weekday: "long", month: "long", day: "numeric" })}{" "}
               at {poll.selectedStartTime} - {poll.selectedEndTime}
             </div>
             <Button
@@ -284,7 +264,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
       {selectedSlot && !poll.booking && (
         <div className="border-subtle bg-default rounded-md border p-6">
           <h3 className="text-emphasis mb-4 text-lg font-medium">
-            Selected: {formatDate(selectedSlot.date, { weekday: "short", month: "short", day: "numeric" })}{" "}
+            Selected: {formatDateForDisplay(selectedSlot.date, { weekday: "short", month: "short", day: "numeric" })}{" "}
             {selectedSlot.startTime} - {selectedSlot.endTime}
           </h3>
 
@@ -343,7 +323,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
                     You are about to create a booking for <strong>{poll.eventType?.title}</strong>.
                   </p>
                   <div>
-                    <strong>Time:</strong> {formatDate(selectedSlot.date, { weekday: "long", month: "long", day: "numeric" })}{" "}
+                    <strong>Time:</strong> {formatDateForDisplay(selectedSlot.date, { weekday: "long", month: "long", day: "numeric" })}{" "}
                     at {selectedSlot.startTime} - {selectedSlot.endTime}
                   </div>
                   <div>

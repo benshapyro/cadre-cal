@@ -42,7 +42,7 @@ Week 1        Week 2        Week 3        Week 4        Week 5        Week 6    
 |------|------------|--------|
 | Set up deployment target (Railway or similar) | 3h | Production environment |
 | Configure production database | 1h | PostgreSQL provisioned |
-| Set up domain/DNS (cal.cadre.ai or similar) | 1h | Custom domain working |
+| Set up domain/DNS (cal.cadreai.com) | 1h | Custom domain working ✅ |
 | Configure Cadre branding (colors, logo) | 2h | Branded instance |
 | SSL and security review | 1h | HTTPS configured |
 
@@ -421,6 +421,7 @@ Each phase is complete when:
 | Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Private Slack app, DM notifications working |
 | Phase 7: Poll Editing | ✅ Complete | 2025-11-29 | 2025-11-29 | Edit page, add/remove participants, update date range |
 | Phase 8: Polish & Launch | ✅ Complete | 2025-11-28 | 2025-11-28 | Auto-expire, close poll, dashboard badge, all/required toggle |
+| Phase 1C: Code Quality | ✅ Complete | 2025-11-29 | 2025-11-29 | 15 improvements: race conditions, logging, tests, ARIA, timezone docs |
 
 ---
 
@@ -441,6 +442,7 @@ Each phase is complete when:
 | 2025-11-28 | Claude + Ben | **Phase 6 Complete:** Slack app integration - private app, DM notifications to Cadre participants |
 | 2025-11-29 | Claude + Ben | **Phase 7 Complete:** Poll editing - add/remove participants, update date range. **All MVP requirements done!** |
 | 2025-11-28 | Claude + Ben | **Phase 8 Complete:** Auto-expire, close poll, dashboard badge, all/required toggle. **Feature complete for launch!** |
+| 2025-11-29 | Claude + Ben | **Phase 1C Complete:** Code quality improvements - race conditions, logging, unit tests, ARIA, timezone docs |
 
 ---
 

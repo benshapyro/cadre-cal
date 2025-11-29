@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { checkAndSendSlackNotifications } from "@calcom/features/group-polls/lib";
+import { parseTimeString, parseDateString } from "@calcom/features/group-polls/lib/timeUtils";
 import { prisma } from "@calcom/prisma";
 
 import type { TSubmitPollResponseSchema } from "./groupPollResponse.schema";
@@ -8,19 +9,6 @@ import type { TSubmitPollResponseSchema } from "./groupPollResponse.schema";
 type SubmitPollResponseOptions = {
   input: TSubmitPollResponseSchema;
 };
-
-// Convert "HH:MM" string to a Date object with just the time component
-function parseTimeString(timeStr: string): Date {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const date = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0, 0));
-  return date;
-}
-
-// Parse YYYY-MM-DD string to a Date object
-function parseDateString(dateStr: string): Date {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day));
-}
 
 export default async function handler({ input }: SubmitPollResponseOptions) {
   // Find the participant by access token

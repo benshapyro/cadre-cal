@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 
 import type { HeatMapCell } from "@calcom/features/group-polls";
+import { formatDateForDisplay, getSlotKey } from "@calcom/features/group-polls/lib/dateFormatting";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { RouterOutputs } from "@calcom/trpc/react";
 import { trpc } from "@calcom/trpc/react";
@@ -15,7 +16,7 @@ import { showToast } from "@calcom/ui/components/toast";
 import { HeatMap } from "../components";
 
 type PollData = RouterOutputs["viewer"]["public"]["getPollByShareSlug"];
-type Participant = PollData["participants"][number];
+type _Participant = PollData["participants"][number];
 
 interface PublicPollViewProps {
   shareSlug: string;
@@ -31,22 +32,6 @@ interface ParticipantOption {
   value: number;
   label: string;
   hasResponded: boolean;
-}
-
-// Parse YYYY-MM-DD as local date (not UTC) to avoid off-by-one day bug
-function formatDate(date: Date | string): string {
-  const dateStr = date instanceof Date ? date.toISOString().split("T")[0] : String(date);
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function getSlotKey(date: string, startTime: string, endTime: string): string {
-  return `${date}-${startTime}-${endTime}`;
 }
 
 export default function PublicPollView({ shareSlug }: PublicPollViewProps) {
@@ -282,7 +267,7 @@ export default function PublicPollView({ shareSlug }: PublicPollViewProps) {
                           ? "border-inverted bg-inverted text-inverted"
                           : "border-subtle bg-default text-default hover:bg-subtle"
                       }`}>
-                      {formatDate(window.date)} {window.startTime} - {window.endTime}
+                      {formatDateForDisplay(window.date)} {window.startTime} - {window.endTime}
                     </button>
                   );
                 })}

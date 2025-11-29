@@ -1,8 +1,11 @@
 import { TRPCError } from "@trpc/server";
 
+import logger from "@calcom/lib/logger";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
+
+const log = logger.getSubLogger({ prefix: ["groupPolls", "close"] });
 
 type CloseOptions = {
   ctx: {
@@ -62,6 +65,11 @@ export const closeHandler = async ({ ctx, input }: CloseOptions) => {
     data: {
       status: "CLOSED",
     },
+  });
+
+  log.info("Group poll closed", {
+    pollId: input.id,
+    userId: ctx.user.id,
   });
 
   return { success: true };

@@ -1,12 +1,16 @@
 import { TRPCError } from "@trpc/server";
 
 import GroupPollInviteEmail from "@calcom/emails/templates/group-poll-invite-email";
+import { parseTimeString } from "@calcom/features/group-polls/lib/timeUtils";
 import { WEBAPP_URL } from "@calcom/lib/constants";
+import logger from "@calcom/lib/logger";
 import { getTranslation } from "@calcom/lib/server/i18n";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
 import type { TUpdateGroupPollSchema } from "./update.schema";
+
+const log = logger.getSubLogger({ prefix: ["groupPolls", "update"] });
 
 type UpdateOptions = {
   ctx: {
@@ -14,13 +18,6 @@ type UpdateOptions = {
   };
   input: TUpdateGroupPollSchema;
 };
-
-// Convert "HH:MM" string to a Date object with just the time component
-function parseTimeString(timeStr: string): Date {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const date = new Date(1970, 0, 1, hours, minutes, 0, 0);
-  return date;
-}
 
 export const updateHandler = async ({ ctx, input }: UpdateOptions) => {
   // Fetch the poll and verify ownership
@@ -161,8 +158,25 @@ export const updateHandler = async ({ ctx, input }: UpdateOptions) => {
     });
 
     // Send emails in parallel, don't fail update if emails fail
-    await Promise.allSettled(emailPromises);
+    const emailResults = await Promise.allSettled(emailPromises);
+    const emailsFailed = emailResults.filter((r) => r.status === "rejected").length;
+
+    if (emailsFailed > 0) {
+      log.warn("Some poll invite emails failed to send", {
+        pollId: poll.id,
+        emailsFailed,
+        newParticipantCount: newParticipants.length,
+      });
+    }
   }
+
+  log.info("Group poll updated", {
+    pollId: poll.id,
+    userId: ctx.user.id,
+    participantsAdded: newParticipants.length,
+    participantsRemoved: input.removeParticipantIds?.length || 0,
+    windowsReplaced: !!input.windows,
+  });
 
   // Return updated poll
   const updatedPoll = await prisma.groupPoll.findUnique({

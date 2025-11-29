@@ -698,7 +698,7 @@ Keep Group Polls code in dedicated locations:
 
 | Question | Options | Recommendation |
 |----------|---------|----------------|
-| Where to store poll share links? | Subdomain (`polls.cadre.ai`) vs path (`cal.cadre.ai/p/xxx`) | Path-based for MVP (simpler) |
+| Where to store poll share links? | Subdomain vs path (`cal.cadreai.com/p/xxx`) | Path-based for MVP (simpler) |
 | How to handle poll event type? | Create hidden event type per poll vs generic "Group Meeting" type | Generic type for MVP |
 | QR code generation | Server-side vs client-side | Client-side (reduces server load, QRCode.js) |
 | Heat map rendering | Canvas vs SVG vs DOM grid | DOM grid with Tailwind (simplest, good enough perf) |
@@ -773,12 +773,25 @@ Full manual browser testing of the Group Polls flow:
 - ✅ Email invitations (GroupPollInviteEmail template)
 - ✅ Event Type integration (selector in create form, linked to booking)
 
-### What's Not Yet Implemented
+### ✅ All MVP Features Implemented (2025-11-29)
+
+All features listed in the design are now complete:
+- ✅ Slack notifications (DM to Cadre participants)
+- ✅ QR code generation (ShareDialog with download)
+- ✅ Poll editing after creation (Phase 7)
+- ✅ Google Calendar sync via EventManager (Phase 2B)
+
+**Code Quality Improvements (Phase 1C):**
+- ✅ Race condition prevention (Prisma transaction)
+- ✅ Structured logging across all handlers
+- ✅ 39 unit tests (timeUtils + heatMapCalculation)
+- ✅ 7 E2E tests (full flows)
+- ✅ ARIA accessibility labels
+- ✅ Calendar retry logic
+- ✅ Timezone strategy documented
+
+**Not Yet Implemented (Enhancement):**
 - Team calendar availability fetch (getTeamAvailability) - shows proposed windows, not live busy times
-- Slack notifications (must-have responded, all responded)
-- QR code generation
-- Poll editing after creation
-- Google Calendar sync for created bookings (booking creates record, but doesn't sync to Google Calendar)
 
 ---
 
@@ -790,3 +803,4 @@ Full manual browser testing of the Group Polls flow:
 | 2025-11-27 | Claude + Ben | Updated to Next.js 15.5.4, changed IDs from cuid to autoincrement (matching Cal.com conventions) |
 | 2025-11-27 | Claude + Ben | Added Section 14: Implementation Notes documenting Phase 1 build decisions |
 | 2025-11-27 | Claude + Ben | Added lessons learned (ENDPOINTS array, date serialization), testing status |
+| 2025-11-29 | Claude + Ben | All MVP features complete. Added Phase 1C code quality notes |

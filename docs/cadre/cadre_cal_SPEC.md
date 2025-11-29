@@ -264,7 +264,7 @@ When poll creator selects a slot and clicks "Book":
 | How to handle timezone display on poll response page? | **Resolved** | MVP: Display times in poll creator's timezone with clear label (e.g., "Times shown in Pacific Time"). Use browser's Intl API to detect user's timezone and show a helper note if different. Post-MVP: Add toggle to view in user's local timezone. |
 | Should Cadre "optional" members also input availability? | Open | Tentatively yes — their calendar is checked but they can override |
 | What if no slot works for everyone? | Open | Show "best available" (most overlap) and let creator decide |
-| Domain for shareable links? | Open | `polls.cadre.ai` or `cal.cadre.ai/poll/xxx`? |
+| Domain for shareable links? | Resolved | `cal.cadreai.com/poll/xxx` (path-based) |
 
 ---
 

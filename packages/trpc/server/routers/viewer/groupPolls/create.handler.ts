@@ -2,12 +2,16 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 
 import GroupPollInviteEmail from "@calcom/emails/templates/group-poll-invite-email";
+import { parseTimeString } from "@calcom/features/group-polls/lib/timeUtils";
 import { WEBAPP_URL } from "@calcom/lib/constants";
+import logger from "@calcom/lib/logger";
 import { getTranslation } from "@calcom/lib/server/i18n";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
 import type { TCreateGroupPollSchema } from "./create.schema";
+
+const log = logger.getSubLogger({ prefix: ["groupPolls", "create"] });
 
 type CreateOptions = {
   ctx: {
@@ -15,13 +19,6 @@ type CreateOptions = {
   };
   input: TCreateGroupPollSchema;
 };
-
-// Convert "HH:MM" string to a Date object with just the time component
-function parseTimeString(timeStr: string): Date {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const date = new Date(1970, 0, 1, hours, minutes, 0, 0);
-  return date;
-}
 
 export const createHandler = async ({ ctx, input }: CreateOptions) => {
   // Validate user owns the event type
@@ -94,7 +91,25 @@ export const createHandler = async ({ ctx, input }: CreateOptions) => {
   });
 
   // Send emails in parallel, don't fail poll creation if emails fail
-  await Promise.allSettled(emailPromises);
+  const emailResults = await Promise.allSettled(emailPromises);
+  const emailsSent = emailResults.filter((r) => r.status === "fulfilled").length;
+  const emailsFailed = emailResults.filter((r) => r.status === "rejected").length;
+
+  if (emailsFailed > 0) {
+    log.warn("Some poll invite emails failed to send", {
+      pollId: poll.id,
+      emailsSent,
+      emailsFailed,
+    });
+  }
+
+  log.info("Group poll created", {
+    pollId: poll.id,
+    userId: ctx.user.id,
+    participantCount: poll.participants.length,
+    windowCount: poll.windows.length,
+    emailsSent,
+  });
 
   return {
     id: poll.id,

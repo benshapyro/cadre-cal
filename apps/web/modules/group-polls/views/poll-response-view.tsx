@@ -1,9 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 import type { HeatMapCell } from "@calcom/features/group-polls";
+import {
+  formatDateForDisplay,
+  formatTimeForDisplay,
+  getSlotKey,
+} from "@calcom/features/group-polls/lib/dateFormatting";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { RouterOutputs } from "@calcom/trpc/react";
 import { trpc } from "@calcom/trpc/react";
@@ -27,33 +32,6 @@ interface TimeSlot {
   endTime: string;
 }
 
-// Parse YYYY-MM-DD as local date (not UTC) to avoid off-by-one day bug
-function formatDate(date: Date | string): string {
-  const dateStr = date instanceof Date ? date.toISOString().split("T")[0] : String(date);
-  // Parse YYYY-MM-DD as local date, not UTC
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const d = new Date(year, month - 1, day); // Local midnight
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatTime(time: string): string {
-  // Time is already in HH:mm format, convert to 12-hour display
-  const [hours, minutes] = time.split(":");
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
-}
-
-function getSlotKey(date: string, startTime: string, endTime: string): string {
-  // Date is already in YYYY-MM-DD format, no need to convert via Date object
-  return `${date}-${startTime}-${endTime}`;
-}
-
 export default function PollResponseView({ accessToken }: PollResponseViewProps) {
   const { t: _t } = useLocale();
   const _router = useRouter();
@@ -69,8 +47,8 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Initialize form with existing data
-  useMemo(() => {
+  // Initialize form with existing data (useEffect is correct for side effects)
+  useEffect(() => {
     if (data && !hasInitialized) {
       setName(data.participant.name || "");
       setEmail(data.participant.email || "");
@@ -160,7 +138,7 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
+      <div className="mx-auto max-w-2xl px-4 py-8" data-testid="poll-loading">
         <div className="border-subtle bg-default rounded-lg border p-6">
           <SkeletonText className="mb-2 h-8 w-64" />
           <SkeletonText className="mb-6 h-4 w-48" />
@@ -192,7 +170,7 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
   const { poll, participant } = data;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8" data-testid="poll-response-ready">
       <div className="border-subtle bg-default mb-6 rounded-lg border p-6">
         <div className="mb-4">
           <h1 className="text-emphasis text-2xl font-semibold">{poll.title}</h1>
@@ -213,6 +191,7 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <TextField
             label="Name"
+            name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
@@ -220,6 +199,7 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
           />
           <EmailField
             label="Email"
+            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
@@ -246,24 +226,31 @@ export default function PollResponseView({ accessToken }: PollResponseViewProps)
           <div className="space-y-4">
             {Array.from(windowsByDate.entries()).map(([dateKey, windows]) => (
               <div key={dateKey} className="border-subtle rounded-md border p-4">
-                <h3 className="text-emphasis mb-3 font-medium">{formatDate(dateKey)}</h3>
+                <h3 className="text-emphasis mb-3 font-medium">{formatDateForDisplay(dateKey)}</h3>
                 <div className="flex flex-wrap gap-2">
                   {windows.map((window) => {
                     const slotKey = getSlotKey(window.date, window.startTime, window.endTime);
                     const isSelected = selectedSlots.has(slotKey);
+                    const startTimeDisplay = formatTimeForDisplay(window.startTime);
+                    const endTimeDisplay = formatTimeForDisplay(window.endTime);
+                    const ariaLabel = isSelected
+                      ? `Time slot ${startTimeDisplay} to ${endTimeDisplay}, selected`
+                      : `Time slot ${startTimeDisplay} to ${endTimeDisplay}`;
 
                     return (
                       <button
                         key={window.id}
                         type="button"
                         data-testid="time-slot-button"
+                        aria-label={ariaLabel}
+                        aria-pressed={isSelected}
                         onClick={() => toggleSlot(slotKey)}
                         className={`rounded-md border px-3 py-2 text-sm transition-colors ${
                           isSelected
                             ? "border-inverted bg-inverted text-inverted"
                             : "border-subtle bg-default text-default hover:bg-subtle"
                         }`}>
-                        {formatTime(window.startTime)} - {formatTime(window.endTime)}
+                        {startTimeDisplay} - {endTimeDisplay}
                       </button>
                     );
                   })}

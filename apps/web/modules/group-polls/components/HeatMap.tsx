@@ -1,6 +1,7 @@
 "use client";
 
 import type { HeatMapData, HeatMapCell as HeatMapCellData } from "@calcom/features/group-polls";
+import { formatDateForDisplay, getSlotKey } from "@calcom/features/group-polls/lib/dateFormatting";
 
 import { HeatMapCell } from "./HeatMapCell";
 import { HeatMapLegend } from "./HeatMapLegend";
@@ -17,22 +18,7 @@ interface HeatMapProps {
  * Get unique key for a heat map cell
  */
 function getCellKey(cell: HeatMapCellData): string {
-  return `${cell.date}-${cell.startTime}-${cell.endTime}`;
-}
-
-/**
- * Format date for display - parses YYYY-MM-DD as local date (not UTC)
- */
-function formatDateHeading(dateString: string): string {
-  // Parse YYYY-MM-DD as local date, not UTC
-  // new Date("2025-12-01") or new Date("2025-12-01T00:00:00") interprets as UTC
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(year, month - 1, day); // Local midnight
-  return date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  return getSlotKey(cell.date, cell.startTime, cell.endTime);
 }
 
 export function HeatMap({
@@ -87,7 +73,7 @@ export function HeatMap({
       <div className="space-y-4">
         {dates.map((date) => (
           <div key={date}>
-            <div className="mb-2 text-sm font-medium text-emphasis">{formatDateHeading(date)}</div>
+            <div className="mb-2 text-sm font-medium text-emphasis">{formatDateForDisplay(date)}</div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {cellsByDate[date].map((cell) => {
                 const cellKey = getCellKey(cell);

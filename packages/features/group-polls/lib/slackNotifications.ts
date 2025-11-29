@@ -1,7 +1,10 @@
 import { WebClient } from "@slack/web-api";
 
+import logger from "@calcom/lib/logger";
 import prisma from "@calcom/prisma";
 import type { ParticipantType } from "@calcom/prisma/enums";
+
+const log = logger.getSubLogger({ prefix: ["groupPolls", "slack"] });
 
 // Initialize Slack client only if token is configured
 const slack = process.env.SLACK_BOT_TOKEN ? new WebClient(process.env.SLACK_BOT_TOKEN) : null;
@@ -23,7 +26,7 @@ interface NotificationContext {
  */
 export async function checkAndSendSlackNotifications(ctx: NotificationContext): Promise<void> {
   if (!slack) {
-    console.log("[Slack] Not configured, skipping notifications");
+    log.debug("Slack not configured, skipping notifications", { pollId: ctx.pollId });
     return;
   }
 
@@ -35,7 +38,7 @@ export async function checkAndSendSlackNotifications(ctx: NotificationContext): 
     });
 
     if (!poll) {
-      console.log(`[Slack] Poll ${ctx.pollId} not found`);
+      log.warn("Poll not found for Slack notification", { pollId: ctx.pollId });
       return;
     }
 
@@ -62,7 +65,7 @@ export async function checkAndSendSlackNotifications(ctx: NotificationContext): 
     );
 
     if (cadreParticipants.length === 0) {
-      console.log("[Slack] No Cadre participants to notify");
+      log.debug("No Cadre participants to notify", { pollId: ctx.pollId });
       return;
     }
 
@@ -81,10 +84,18 @@ export async function checkAndSendSlackNotifications(ctx: NotificationContext): 
       });
     }
 
-    console.log(`[Slack] Sent ${notificationType} notifications to ${cadreParticipants.length} Cadre participants`);
+    log.info("Slack notifications sent", {
+      pollId: ctx.pollId,
+      notificationType,
+      recipientCount: cadreParticipants.length,
+    });
   } catch (error) {
     // Log but don't throw - Slack errors shouldn't block poll responses
-    console.error("[Slack] Error sending notifications:", error);
+    log.error("Error sending Slack notifications", {
+      pollId: ctx.pollId,
+      pollTitle: ctx.pollTitle,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -106,7 +117,7 @@ async function sendSlackDM(email: string, data: SlackDMData): Promise<void> {
     const slackUserId = userResult.user?.id;
 
     if (!slackUserId) {
-      console.log(`[Slack] No user found for email: ${email}`);
+      log.debug("No Slack user found for email", { email });
       return;
     }
 
@@ -122,10 +133,15 @@ async function sendSlackDM(email: string, data: SlackDMData): Promise<void> {
       ...message,
     });
 
-    console.log(`[Slack] Notification sent to ${email}`);
+    log.debug("Slack notification sent", { email, notificationType: data.notificationType });
   } catch (error) {
     // Log individual failures but continue with other participants
-    console.error(`[Slack] Failed to send notification to ${email}:`, error);
+    log.error("Failed to send Slack notification to user", {
+      email,
+      pollTitle: data.pollTitle,
+      notificationType: data.notificationType,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 

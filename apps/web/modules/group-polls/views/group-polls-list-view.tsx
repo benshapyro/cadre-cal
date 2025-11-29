@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { formatDateForDisplay } from "@calcom/features/group-polls/lib/dateFormatting";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useCopy } from "@calcom/lib/hooks/useCopy";
 import type { RouterOutputs } from "@calcom/trpc/react";
@@ -23,11 +24,6 @@ import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { showToast } from "@calcom/ui/components/toast";
 
 type GroupPoll = RouterOutputs["viewer"]["groupPolls"]["list"][number];
-
-function formatDate(date: Date | string): string {
-  const d = new Date(date);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -81,7 +77,8 @@ function PollListItem({ poll, onDelete }: { poll: GroupPoll; onDelete: () => voi
           </Link>
           <div className="text-subtle mt-1 flex items-center gap-3 text-sm">
             <span>
-              {formatDate(poll.dateRangeStart)} - {formatDate(poll.dateRangeEnd)}
+              {formatDateForDisplay(poll.dateRangeStart, { month: "short", day: "numeric", year: "numeric" })} -{" "}
+              {formatDateForDisplay(poll.dateRangeEnd, { month: "short", day: "numeric", year: "numeric" })}
             </span>
             <span className="text-muted">|</span>
             <span>{poll.durationMinutes} min</span>

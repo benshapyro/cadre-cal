@@ -17,11 +17,18 @@ export function HeatMapCell({ cell, showParticipantNames, isSelected, onClick }:
       ? cell.participantNames.join(", ")
       : `${cell.responseCount}/${cell.totalParticipants} available`;
 
+  // Build accessible label for screen readers
+  const ariaLabel = isSelected
+    ? `Time slot ${cell.startTime} to ${cell.endTime}, ${cell.responseCount} of ${cell.totalParticipants} available, selected`
+    : `Time slot ${cell.startTime} to ${cell.endTime}, ${cell.responseCount} of ${cell.totalParticipants} available`;
+
   const cellContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={!onClick}
+      aria-label={ariaLabel}
+      aria-pressed={isSelected}
       data-testid="time-slot-button"
       className={`min-h-[60px] w-full rounded-md p-2 text-center transition-all ${colorClass}
         ${isSelected ? "ring-2 ring-emphasis ring-offset-2" : ""}

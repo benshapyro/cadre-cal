@@ -1,8 +1,11 @@
 import { TRPCError } from "@trpc/server";
 
+import logger from "@calcom/lib/logger";
 import { prisma } from "@calcom/prisma";
 
 import type { TrpcSessionUser } from "../../../types";
+
+const log = logger.getSubLogger({ prefix: ["groupPolls", "delete"] });
 
 type DeleteOptions = {
   ctx: {
@@ -44,6 +47,11 @@ export const deleteHandler = async ({ ctx, input }: DeleteOptions) => {
     where: {
       id: input.id,
     },
+  });
+
+  log.info("Group poll deleted", {
+    pollId: input.id,
+    userId: ctx.user.id,
   });
 
   return { success: true };
