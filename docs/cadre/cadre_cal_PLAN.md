@@ -416,8 +416,10 @@ Each phase is complete when:
 | Phase 2: Response Collection | ✅ Merged | — | — | Merged into Phase 1 - public response page done |
 | Phase 3: Heat Map | ✅ Complete | 2025-11-28 | 2025-11-28 | Merged into Phase 1B |
 | Phase 4: Booking Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Full booking flow working - poll→booking creation |
-| Phase 5: Notifications & QR | ⬜ Not Started | — | — | Email invites done, Slack & QR pending |
-| Phase 6: Polish & Launch | ⬜ Not Started | — | — | |
+| Phase 2B: Timezone Fix & Calendar Sync | ✅ Complete | 2025-11-29 | 2025-11-29 | Date parsing fix, EventManager integration |
+| Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 | /poll/[shareSlug] page, QR code, multi-select submit |
+| Phase 6: Slack App Integration | ⬜ Not Started | — | — | OAuth-based Slack notifications |
+| Phase 7: Polish & Launch | ⬜ Not Started | — | — | Poll editing, auto-expire, dashboard widget |
 
 ---
 
@@ -432,6 +434,9 @@ Each phase is complete when:
 | 2025-11-27 | Claude + Ben | Marked Phase 0B (Railway deployment) complete. Added deployment notes to NOTES.md |
 | 2025-11-27 | Claude + Ben | **Phase 1 Core Complete!** Implemented: Prisma schema (4 models), tRPC routers (6 endpoints), 3 UI pages |
 | 2025-11-27 | Claude + Ben | **Phase 1B Started:** Poll detail page, manual browser testing, bug fixes (tRPC routing, date serialization, time display, submit schema) |
+| 2025-11-28 | Claude + Ben | **Phase 1B + Phase 4 Complete:** E2E tests, heat map visualization, email invites, booking integration |
+| 2025-11-29 | Claude + Ben | **Phase 2B Complete:** Timezone bug fix (YYYY-MM-DD local parsing), EventManager integration for calendar sync |
+| 2025-11-29 | Claude + Ben | **Phase 5 Complete:** Public poll link (/poll/[shareSlug]), QR code generation, multi-participant submit, ShareDialog component |
 
 ---
 
@@ -510,8 +515,9 @@ packages/trpc/react/shared.ts  # Modified: added "groupPolls" to ENDPOINTS
 - [x] Full flow tested: poll → responses → select slot → book → calendar event
 
 **⬜ Remaining for MVP:**
-- [ ] Fix date display timezone issue (UI shows off-by-one day)
-- [ ] Slack notifications (must-have responded, all responded)
-- [ ] QR code generation
-- [ ] Poll editing after creation
-- [ ] Google Calendar sync for created bookings
+- [x] ~~Fix date display timezone issue~~ ✅ Completed in Phase 2B
+- [x] ~~Google Calendar sync for created bookings~~ ✅ Completed in Phase 2B (EventManager integration)
+- [x] ~~QR code generation~~ ✅ Completed in Phase 5
+- [x] ~~Public poll link with multi-select submit~~ ✅ Completed in Phase 5
+- [ ] Slack notifications (must-have responded, all responded) - Phase 6
+- [ ] Poll editing after creation - Phase 7

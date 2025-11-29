@@ -283,7 +283,7 @@ When poll creator selects a slot and clicks "Book":
 | C6 | Set date range | ✅ Implemented | DateRangePicker in create form |
 | C7 | Add client participants | ✅ Implemented | Participant manager in create form |
 | C8 | Add title and description | ✅ Implemented | Text fields in create form |
-| C9 | Receive shareable link | ✅ Implemented | Link generated on creation (copy to clipboard) |
+| C9 | Receive shareable link and QR code | ✅ Implemented | ShareDialog with QR code, copy link, download QR PNG |
 | C10 | Add participants after creation | ⬜ Not Started | Phase 1B |
 | C11 | Edit windows after creation | ⬜ Not Started | Phase 1B |
 | **Poll Response** | | | |
@@ -329,11 +329,12 @@ When poll creator selects a slot and clicks "Book":
 - ✅ Attendees linked to booking
 
 **Remaining for MVP:**
-- Fix date display timezone issue
-- Poll editing after creation
-- Slack notifications
-- QR codes
-- Google Calendar sync for bookings
+- [x] ~~Fix date display timezone issue~~ ✅ Phase 2B
+- [x] ~~Google Calendar sync for bookings~~ ✅ Phase 2B (EventManager)
+- [x] ~~QR codes~~ ✅ Phase 5 (ShareDialog with download)
+- [x] ~~Public poll link with multi-participant submit~~ ✅ Phase 5
+- [ ] Slack notifications - Phase 6
+- [ ] Poll editing after creation - Phase 7
 
 ---
 

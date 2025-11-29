@@ -1140,17 +1140,18 @@ const cacheRules = {
 
 ## Next Steps
 
-**✅ Completed (as of 2025-11-28):**
+**✅ Completed (as of 2025-11-29):**
 1. ~~Explore Booking Flow~~ - Implemented poll → booking conversion in `book.handler.ts`
 2. ~~Study Availability Logic~~ - Heat map calculation using response data
 3. ~~Examine UI Components~~ - Using Cal.com UI library throughout
 4. ~~Test Database Queries~~ - Full CRUD operations working
+5. ~~Calendar Integration~~ - EventManager integration in `book.handler.ts` (Phase 2B)
+6. ~~QR Code Generation~~ - ShareDialog with react-qr-code, download as PNG (Phase 5)
+7. ~~Public Poll Link~~ - `/poll/[shareSlug]` with multi-participant submit (Phase 5)
 
 **Remaining:**
-1. **Calendar Integration** - Connect booking to EventManager for Google Calendar sync
-2. **Slack Notifications** - Implement must-have responded, all responded alerts
-3. **QR Code Generation** - Add to share dialog
-4. **Poll Editing** - Allow adding windows/participants after creation
+1. **Slack Notifications** - Implement must-have responded, all responded alerts (Phase 6)
+2. **Poll Editing** - Allow adding windows/participants after creation (Phase 7)
 
 ---
 
