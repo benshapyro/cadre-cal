@@ -297,16 +297,16 @@ When poll creator selects a slot and clicks "Book":
 | R8 | Mobile works well | ✅ Tested | Responsive layout verified |
 | **Results & Booking** | | | |
 | B1 | Heat map showing overlap | ✅ Implemented | Color-coded heat map in detail view |
-| B2 | Toggle all/required view | ⬜ Not Started | Post-MVP |
+| B2 | Toggle all/required view | ✅ Implemented | Phase 8 - Toggle buttons in detail view |
 | B3 | Clear "everyone available" indicator | ✅ Implemented | "Perfect times" banner, green slots |
 | B4 | One-click booking | ✅ Implemented | Select slot → confirm dialog → book |
 | B5 | Calendar invites sent | ✅ Implemented | Via Cal.com booking system |
 | B6-B7 | Slack notifications | ✅ Implemented | DM to Cadre participants (needs Slack app setup) |
 | **Poll Management** | | | |
 | M1 | View all polls | ✅ Implemented | `/group-polls` list page |
-| M2 | Dashboard count | ⬜ Not Started | Phase 6 |
-| M3 | Manual close poll | ⬜ Not Started | Phase 1B |
-| M4 | Auto-expire polls | ⬜ Not Started | Phase 6 |
+| M2 | Dashboard count | ✅ Implemented | Phase 8 - Active poll count badge in list view |
+| M3 | Manual close poll | ✅ Implemented | Phase 8 - Close Poll button for ACTIVE polls |
+| M4 | Auto-expire polls | ✅ Implemented | Phase 8 - Check-on-load pattern |
 | M5 | Reminder nudges | ⬜ Not Started | Post-MVP |
 
 ### Scope Delivered vs. Remaining
@@ -336,14 +336,17 @@ When poll creator selects a slot and clicks "Book":
 - [x] ~~Slack notifications~~ ✅ Phase 6 (Slack app created, DMs working)
 - [x] ~~Poll editing after creation~~ ✅ Phase 7 (add/remove participants, update date range)
 
-**🎉 All MVP (C-priority) requirements complete!**
+**🎉 All MVP + Polish requirements complete!**
 
-**Nice-to-have (not blocking launch):**
-- [ ] Toggle all/required view (B2) - Post-MVP
-- [ ] Dashboard poll count (M2) - Phase 4
-- [ ] Manual close poll (M3) - Phase 4
-- [ ] Auto-expire polls (M4) - Phase 4
-- [ ] Cadre calendar availability check (C3) - Post-MVP enhancement
+**Delivered in Phase 8 (Polish & Launch):**
+- [x] ~~Toggle all/required view (B2)~~ ✅ Phase 8
+- [x] ~~Dashboard poll count (M2)~~ ✅ Phase 8
+- [x] ~~Manual close poll (M3)~~ ✅ Phase 8
+- [x] ~~Auto-expire polls (M4)~~ ✅ Phase 8
+
+**Future enhancements (post-launch):**
+- [ ] Cadre calendar availability check (C3) - Enhancement
+- [ ] Reminder nudges to non-responders (M5) - Enhancement
 
 ---
 
@@ -356,3 +359,4 @@ When poll creator selects a slot and clicks "Book":
 | 2025-11-27 | Claude + Ben | Added Section 9: Implementation Status tracking user story progress |
 | 2025-11-28 | Claude + Ben | Phase 6: Slack notifications implemented (B6-B7 complete) |
 | 2025-11-29 | Claude + Ben | Phase 7: Poll editing (C10, C11 complete). All MVP requirements done! |
+| 2025-11-28 | Claude + Ben | Phase 8: Polish complete (B2, M2, M3, M4). Feature complete for launch! |

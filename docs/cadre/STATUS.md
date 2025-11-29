@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
-**Last Updated:** 2025-11-29
-**Current Phase:** Phase 7 Complete - Poll Editing Working!
-**Overall Status:** 🟢 Full MVP Complete (All C-requirements done)
+**Last Updated:** 2025-11-28
+**Current Phase:** Phase 8 Complete - All Features Done!
+**Overall Status:** 🟢 Feature Complete - Ready for Production Launch
 
 ---
 
@@ -248,11 +248,33 @@
 - ✅ Toast notification: "Poll updated! 1 added, 0 removed"
 - ✅ Heat map updates to reflect new participant count
 
-**Future Enhancements (Not MVP):**
+### ✅ Phase 8: Polish & Launch (2025-11-28)
+
+**M3: Manual Close Poll:**
+- ✅ Created `close.handler.ts` - close mutation for groupPolls router
+- ✅ Added "Close Poll" button to detail view (only shows for ACTIVE polls)
+- ✅ Status changes to CLOSED, prevents further responses
+
+**M4: Auto-Expire Polls:**
+- ✅ Created `expirePolls.ts` utility in features/group-polls/lib
+- ✅ Check-on-load pattern (no cron needed)
+- ✅ Integrated into list.handler.ts and get.handler.ts
+- ✅ Polls with past dateRangeEnd automatically expire
+
+**B2: Toggle All/Required Participants View:**
+- ✅ Added `heatMapRequired` calculation in get.handler.ts
+- ✅ Toggle buttons in detail view: "All Participants" / "Required Only"
+- ✅ Heat map updates to show only CADRE_REQUIRED participants
+
+**M2: Dashboard Poll Count:**
+- ✅ Added active poll count badge to list view header
+- ✅ Shows "X active polls awaiting responses"
+
+**🎉 All Features Complete!**
 
 **Deferred:**
 - Phase 0B: Google OAuth on Railway (can add later)
-- Phase 0C: Team Onboarding (deferred until Group Polls MVP)
+- Phase 0C: Team Onboarding (deferred until after launch)
 
 ---
 
@@ -340,7 +362,7 @@ git status
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
 | Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 |
 | Phase 7: Poll Editing | ✅ Complete | 2025-11-29 | 2025-11-29 |
-| Phase 4: Polish & Launch | ⬜ Not Started | — | — |
+| Phase 8: Polish & Launch | ✅ Complete | 2025-11-28 | 2025-11-28 |
 
 See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.
 

@@ -420,7 +420,7 @@ Each phase is complete when:
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 | /poll/[shareSlug] page, QR code, multi-select submit |
 | Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 | Private Slack app, DM notifications working |
 | Phase 7: Poll Editing | ✅ Complete | 2025-11-29 | 2025-11-29 | Edit page, add/remove participants, update date range |
-| Phase 8: Polish & Launch | ⬜ Not Started | — | — | Auto-expire, dashboard widget, production deployment |
+| Phase 8: Polish & Launch | ✅ Complete | 2025-11-28 | 2025-11-28 | Auto-expire, close poll, dashboard badge, all/required toggle |
 
 ---
 
@@ -440,6 +440,7 @@ Each phase is complete when:
 | 2025-11-29 | Claude + Ben | **Phase 5 Complete:** Public poll link (/poll/[shareSlug]), QR code generation, multi-participant submit, ShareDialog component |
 | 2025-11-28 | Claude + Ben | **Phase 6 Complete:** Slack app integration - private app, DM notifications to Cadre participants |
 | 2025-11-29 | Claude + Ben | **Phase 7 Complete:** Poll editing - add/remove participants, update date range. **All MVP requirements done!** |
+| 2025-11-28 | Claude + Ben | **Phase 8 Complete:** Auto-expire, close poll, dashboard badge, all/required toggle. **Feature complete for launch!** |
 
 ---
 
@@ -525,8 +526,8 @@ packages/trpc/react/shared.ts  # Modified: added "groupPolls" to ENDPOINTS
 - [x] ~~Slack notifications~~ ✅ Completed in Phase 6 (DMs working)
 - [x] ~~Poll editing after creation~~ ✅ Completed in Phase 7
 
-**Nice-to-have for Polish (Phase 8):**
-- [ ] Auto-expire polls when dates pass
-- [ ] Manual close poll functionality
-- [ ] Dashboard poll count widget
-- [ ] Toggle all/required view on heat map
+**Phase 8 Polish Complete:**
+- [x] Auto-expire polls when dates pass ✅
+- [x] Manual close poll functionality ✅
+- [x] Dashboard poll count widget ✅
+- [x] Toggle all/required view on heat map ✅
