@@ -161,6 +161,7 @@ export default function GroupPollsCreateView() {
             onChange={(opt) => opt && handleEventTypeChange(opt.value)}
             required
             isDisabled={eventTypesLoading || eventTypeOptions.length === 0}
+            data-testid="event-type-select"
           />
           {!eventTypesLoading && eventTypeOptions.length === 0 && (
             <p className="text-attention text-sm">

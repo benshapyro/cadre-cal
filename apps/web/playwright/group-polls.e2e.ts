@@ -13,7 +13,19 @@ test.describe("Group Polls", () => {
 
   test.describe("Poll Creation", () => {
     test("user can create a new poll", async ({ page, users }) => {
+      // Create user with an event type (required for poll creation)
       const user = await users.create();
+
+      // Create an event type for this user
+      const eventType = await prisma.eventType.create({
+        data: {
+          title: "Test Meeting",
+          slug: `test-meeting-${Date.now()}`,
+          length: 60,
+          userId: user.id,
+        },
+      });
+
       await user.apiLogin();
 
       // Navigate to create poll page
@@ -24,8 +36,9 @@ test.describe("Group Polls", () => {
       await page.fill('[name="title"]', "Team Planning Meeting");
       await page.fill('textarea[name="description"]', "Quarterly planning session");
 
-      // Select duration (60 minutes is default)
-      // Duration select is already set, so we skip it
+      // Select event type (required)
+      await page.click('[data-testid="event-type-select"]');
+      await page.click(`text=${eventType.title}`);
 
       // Add a participant
       await page.fill('input[name="participants.0.name"]', "John Doe");
@@ -39,6 +52,9 @@ test.describe("Group Polls", () => {
 
       // Verify poll was created
       await expect(page.locator("text=Team Planning Meeting")).toBeVisible();
+
+      // Cleanup
+      await prisma.eventType.delete({ where: { id: eventType.id } });
     });
 
     test("poll appears in polls list after creation", async ({ page, users }) => {
