@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
 **Last Updated:** 2025-11-29
-**Current Phase:** Phase 2 Complete - Booking Integration with Calendar Sync!
-**Overall Status:** 🟢 MVP Complete
+**Current Phase:** Phase 5 Complete - Public Poll Link & QR Code Sharing!
+**Overall Status:** 🟢 MVP Complete + Sharing Features
 
 ---
 
@@ -175,11 +175,35 @@
 - ✅ Graceful error handling (booking succeeds even if calendar sync fails)
 - ✅ Tested: EventManager called correctly, no BookingReference created only because local dev has no OAuth credentials
 
+### ✅ Phase 5: Public Poll Link & QR Code Sharing (2025-11-29)
+
+**Public Poll Page (`/poll/[shareSlug]`):**
+- ✅ Created public tRPC endpoint `getPollByShareSlug` - fetches poll by shareSlug with anonymous heat map
+- ✅ Created public tRPC endpoint `submitMultiPollResponse` - submit availability for multiple participants at once
+- ✅ Created public poll page route `apps/web/app/(booking-page-wrapper)/poll/[shareSlug]/page.tsx`
+- ✅ Created `public-poll-view.tsx` with multi-select participant dropdown
+- ✅ Anyone with the link can select participants from searchable dropdown and submit availability
+- ✅ Shows "Responded" badge next to participants who have already submitted
+- ✅ Pre-populates existing responses when participant is selected
+- ✅ Shows anonymous heat map (counts only, no names) for privacy
+
+**QR Code & Share Dialog:**
+- ✅ Created `ShareDialog.tsx` component with QR code generation
+- ✅ Uses `react-qr-code` library (already in Cal.com dependencies)
+- ✅ Copy link to clipboard functionality
+- ✅ Download QR code as PNG functionality (canvas-based conversion)
+- ✅ Added "Share Poll" button to poll detail view
+
+**Testing:**
+- ✅ Full flow tested: Share button → Copy link → Public page → Select participant → Submit availability
+- ✅ Form resets after successful submission
+
 **Future Enhancements (Not MVP):**
 
 **Deferred:**
 - Phase 0B: Google OAuth on Railway (can add later)
 - Phase 0C: Team Onboarding (deferred until Group Polls MVP)
+- Phase 6: Slack App Integration (full OAuth-based notifications)
 
 ---
 
@@ -264,7 +288,8 @@ git status
 | Phase 1: Group Polls Core | ✅ Complete | 2025-11-27 | 2025-11-27 |
 | Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
 | Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
-| Phase 3: Notifications & QR | ⬜ Not Started | — | — |
+| Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
+| Phase 6: Slack App Integration | ⬜ Not Started | — | — |
 | Phase 4: Polish & Launch | ⬜ Not Started | — | — |
 
 See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.

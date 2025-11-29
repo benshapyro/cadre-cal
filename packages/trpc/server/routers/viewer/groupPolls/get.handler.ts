@@ -107,6 +107,7 @@ export const getHandler = async ({ ctx, input }: GetOptions) => {
     title: poll.title,
     description: poll.description,
     status: poll.status,
+    shareSlug: poll.shareSlug,
     durationMinutes: poll.durationMinutes,
     dateRangeStart: poll.dateRangeStart.toISOString(),
     dateRangeEnd: poll.dateRangeEnd.toISOString(),

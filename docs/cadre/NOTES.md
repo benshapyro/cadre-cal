@@ -502,3 +502,142 @@ function formatDate(dateStr: string): string {
 - `CredentialForCalendarService` requires `delegatedTo` field (set to `null` for group polls)
 - Wrap in try/catch - calendar sync is secondary to booking creation
 - Check server logs for "EventManager" messages to debug calendar integration
+
+---
+
+## Phase 5: Public Poll Link & QR Code Sharing (2025-11-29)
+
+### Public Poll Architecture
+
+**Design Decision:** Single shareable URL where anyone can submit availability for any participant.
+
+**UX Flow:**
+1. Organizer clicks "Share Poll" button on poll detail page
+2. Dialog shows QR code and shareable URL (`/poll/[shareSlug]`)
+3. Anyone with the link can access the public poll page
+4. User selects one or more participants from searchable dropdown
+5. User selects availability time slots from heat map
+6. User submits availability for all selected participants at once
+
+**Key Design Choices:**
+- **Multi-select dropdown**: Allow submitting for multiple participants (e.g., assistant scheduling for team)
+- **Searchable**: Filter participants by name or email
+- **"Responded" badge**: Shows which participants have already submitted
+- **Pre-population**: When selecting a participant, loads their existing responses
+- **Anonymous heat map**: Public view shows counts only (e.g., "3/5") not names for privacy
+
+### Files Created
+
+**tRPC Endpoints:**
+```
+packages/trpc/server/routers/publicViewer/getPollByShareSlug.handler.ts
+packages/trpc/server/routers/publicViewer/submitMultiPollResponse.handler.ts
+packages/trpc/server/routers/publicViewer/groupPollResponse.schema.ts (updated)
+packages/trpc/server/routers/publicViewer/_router.tsx (updated)
+```
+
+**Pages & Components:**
+```
+apps/web/app/(booking-page-wrapper)/poll/[shareSlug]/page.tsx
+apps/web/modules/group-polls/views/public-poll-view.tsx
+apps/web/modules/group-polls/components/ShareDialog.tsx
+apps/web/modules/group-polls/components/index.ts (updated)
+apps/web/modules/group-polls/views/group-polls-detail-view.tsx (updated)
+```
+
+### QR Code Implementation
+
+Used `react-qr-code` library (already in Cal.com dependencies):
+
+```typescript
+import QRCode from "react-qr-code";
+
+<QRCode
+  value={shareUrl}
+  size={200}
+  level="M"
+  bgColor="#ffffff"
+  fgColor="#000000"
+/>
+```
+
+**Download QR as PNG:**
+1. Serialize SVG to blob
+2. Draw to canvas with padding
+3. Export canvas as PNG blob
+4. Create download link
+
+```typescript
+const svg = qrRef.current.querySelector("svg");
+const svgData = new XMLSerializer().serializeToString(svg);
+const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+const svgUrl = URL.createObjectURL(svgBlob);
+
+const img = new Image();
+img.onload = () => {
+  ctx.drawImage(img, padding, padding, size, size);
+  canvas.toBlob((blob) => {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${pollTitle}-qr.png`;
+    link.click();
+  }, "image/png");
+};
+img.src = svgUrl;
+```
+
+### Multi-Participant Response Submission
+
+**Schema for multi-participant submit:**
+```typescript
+export const ZSubmitMultiPollResponseSchema = z.object({
+  shareSlug: z.string(),
+  participantIds: z.array(z.number()).min(1, "Select at least one participant"),
+  availability: z.array(
+    z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      startTime: z.string().regex(/^\d{2}:\d{2}$/),
+      endTime: z.string().regex(/^\d{2}:\d{2}$/),
+    })
+  ),
+});
+```
+
+**Handler logic:**
+1. Find poll by shareSlug
+2. Validate all participantIds belong to this poll
+3. For each participant:
+   - Delete existing responses (replace mode)
+   - Create new responses for selected time slots
+   - Mark participant as `hasResponded: true`
+4. Return count of updated participants
+
+### Cal.com UI Component Discovery
+
+**Select component import:**
+```typescript
+// Correct import path for multi-select:
+import { Select } from "@calcom/ui/components/form";
+
+// NOT from "@calcom/ui/components/form/select" (doesn't exist)
+```
+
+**Multi-select with custom formatting:**
+```typescript
+<Select<ParticipantOption, true>
+  isMulti
+  isSearchable
+  placeholder="Search and select participants..."
+  options={participantOptions}
+  value={selectedParticipants}
+  onChange={handleParticipantChange}
+  formatOptionLabel={(option) => (
+    <div className="flex items-center justify-between">
+      <span>{option.label}</span>
+      {option.hasResponded && (
+        <Badge variant="success" size="sm">Responded</Badge>
+      )}
+    </div>
+  )}
+/>
+```

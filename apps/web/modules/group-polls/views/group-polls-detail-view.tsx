@@ -10,7 +10,7 @@ import { Button } from "@calcom/ui/components/button";
 import { ConfirmationDialogContent, Dialog, DialogTrigger } from "@calcom/ui/components/dialog";
 import { showToast } from "@calcom/ui/components/toast";
 
-import { HeatMap } from "../components";
+import { HeatMap, ShareDialog } from "../components";
 
 interface GroupPollsDetailViewProps {
   pollId: number;
@@ -53,6 +53,7 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<HeatMapCellData | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const { data: poll, isLoading, error, refetch } = trpc.viewer.groupPolls.get.useQuery({ id: pollId });
 
@@ -352,6 +353,12 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
       {/* Actions */}
       <div className="flex justify-end gap-3">
         <Button
+          color="secondary"
+          data-testid="share-poll-button"
+          onClick={() => setShowShareDialog(true)}>
+          Share Poll
+        </Button>
+        <Button
           color="destructive"
           data-testid="delete-poll-button"
           onClick={() => deleteMutation.mutate({ id: pollId })}
@@ -359,6 +366,14 @@ export default function GroupPollsDetailView({ pollId }: GroupPollsDetailViewPro
           Delete Poll
         </Button>
       </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        pollTitle={poll.title}
+        shareSlug={poll.shareSlug}
+      />
     </div>
   );
 }
