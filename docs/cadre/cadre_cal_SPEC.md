@@ -301,7 +301,7 @@ When poll creator selects a slot and clicks "Book":
 | B3 | Clear "everyone available" indicator | ✅ Implemented | "Perfect times" banner, green slots |
 | B4 | One-click booking | ✅ Implemented | Select slot → confirm dialog → book |
 | B5 | Calendar invites sent | ✅ Implemented | Via Cal.com booking system |
-| B6-B7 | Slack notifications | ⬜ Not Started | Phase 5 |
+| B6-B7 | Slack notifications | ✅ Implemented | DM to Cadre participants (needs Slack app setup) |
 | **Poll Management** | | | |
 | M1 | View all polls | ✅ Implemented | `/group-polls` list page |
 | M2 | Dashboard count | ⬜ Not Started | Phase 6 |
@@ -333,7 +333,7 @@ When poll creator selects a slot and clicks "Book":
 - [x] ~~Google Calendar sync for bookings~~ ✅ Phase 2B (EventManager)
 - [x] ~~QR codes~~ ✅ Phase 5 (ShareDialog with download)
 - [x] ~~Public poll link with multi-participant submit~~ ✅ Phase 5
-- [ ] Slack notifications - Phase 6
+- [x] ~~Slack notifications~~ ✅ Phase 6 (code complete, needs Slack app setup)
 - [ ] Poll editing after creation - Phase 7
 
 ---
@@ -345,3 +345,4 @@ When poll creator selects a slot and clicks "Book":
 | 2024-01-XX | Claude + Ben | Initial specification |
 | 2025-11-27 | Claude + Ben | Updated IDs from UUID to Integer (Cal.com convention), resolved timezone question, added access_token field |
 | 2025-11-27 | Claude + Ben | Added Section 9: Implementation Status tracking user story progress |
+| 2025-11-28 | Claude + Ben | Phase 6: Slack notifications implemented (B6-B7 complete) |

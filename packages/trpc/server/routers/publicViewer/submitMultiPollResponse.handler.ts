@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { checkAndSendSlackNotifications } from "@calcom/features/group-polls/lib";
 import { prisma } from "@calcom/prisma";
 
 import type { TSubmitMultiPollResponseSchema } from "./groupPollResponse.schema";
@@ -91,6 +92,24 @@ export default async function handler({ input }: SubmitMultiPollResponseOptions)
       });
     }
   });
+
+  // After successful response submission, send Slack notifications
+  // This is done outside the transaction so Slack errors don't roll back the response
+  for (const participantId of input.participantIds) {
+    const participant = poll.participants.find((p) => p.id === participantId);
+    if (participant) {
+      // Fire and forget - don't await to avoid blocking the response
+      checkAndSendSlackNotifications({
+        pollId: poll.id,
+        pollTitle: poll.title,
+        pollShareSlug: poll.shareSlug,
+        respondedParticipantName: participant.name,
+        respondedParticipantType: participant.type,
+      }).catch((err) => {
+        console.error("[Slack] Background notification failed:", err);
+      });
+    }
+  }
 
   return {
     success: true,

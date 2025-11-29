@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { checkAndSendSlackNotifications } from "@calcom/features/group-polls/lib";
 import { prisma } from "@calcom/prisma";
 
 import type { TSubmitPollResponseSchema } from "./groupPollResponse.schema";
@@ -80,6 +81,18 @@ export default async function handler({ input }: SubmitPollResponseOptions) {
         respondedAt: new Date(),
       },
     });
+  });
+
+  // After successful response submission, send Slack notifications
+  // Fire and forget - don't await to avoid blocking the response
+  checkAndSendSlackNotifications({
+    pollId: participant.poll.id,
+    pollTitle: participant.poll.title,
+    pollShareSlug: participant.poll.shareSlug,
+    respondedParticipantName: input.name,
+    respondedParticipantType: participant.type,
+  }).catch((err) => {
+    console.error("[Slack] Background notification failed:", err);
   });
 
   return { success: true };

@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
-**Last Updated:** 2025-11-29
-**Current Phase:** Phase 5 Complete - Public Poll Link & QR Code Sharing!
-**Overall Status:** 🟢 MVP Complete + Sharing Features
+**Last Updated:** 2025-11-28
+**Current Phase:** Phase 6 In Progress - Slack App Integration
+**Overall Status:** 🟢 MVP Complete + Slack Notifications In Progress
 
 ---
 
@@ -198,12 +198,37 @@
 - ✅ Full flow tested: Share button → Copy link → Public page → Select participant → Submit availability
 - ✅ Form resets after successful submission
 
+### 🔄 Phase 6: Slack App Integration (In Progress - 2025-11-28)
+
+**Private Slack App Approach:**
+- ✅ Private Slack app (not distributable) - simpler for Cadre internal use
+- ✅ Bot Token scopes: `chat:write`, `users:read.email`, `users:read`
+- ✅ DM notifications to each Cadre member on the poll
+
+**Implementation:**
+1. ✅ Installed `@slack/web-api` SDK to @calcom/features package
+2. ✅ Created `packages/features/group-polls/lib/slackNotifications.ts`
+   - `checkAndSendSlackNotifications()` - Main function called after poll response
+   - `sendSlackDM()` - Looks up user by email, sends DM
+   - Rich Block Kit messages with poll title, progress, action button
+3. ✅ Integrated into `submitMultiPollResponse.handler.ts` (public poll form)
+4. ✅ Integrated into `submitPollResponse.handler.ts` (direct participant link)
+5. ✅ Added `SLACK_BOT_TOKEN` to `.env.example`
+
+**Notification Triggers:**
+- When a CADRE_REQUIRED participant responds → notify all Cadre participants
+- When ALL participants have responded → notify all Cadre participants
+
+**Remaining:**
+- ⬜ Create Slack app in Cadre workspace (manual step)
+- ⬜ Get Bot Token and add to `.env`
+- ⬜ Manual testing with real Slack notifications
+
 **Future Enhancements (Not MVP):**
 
 **Deferred:**
 - Phase 0B: Google OAuth on Railway (can add later)
 - Phase 0C: Team Onboarding (deferred until Group Polls MVP)
-- Phase 6: Slack App Integration (full OAuth-based notifications)
 
 ---
 
@@ -289,7 +314,7 @@ git status
 | Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
 | Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
-| Phase 6: Slack App Integration | ⬜ Not Started | — | — |
+| Phase 6: Slack App Integration | 🔄 In Progress | 2025-11-28 | — |
 | Phase 4: Polish & Launch | ⬜ Not Started | — | — |
 
 See `docs/cadre_cal_PLAN.md` for detailed phase breakdown.
