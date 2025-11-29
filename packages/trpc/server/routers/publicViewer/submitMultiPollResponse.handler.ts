@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { checkAndSendSlackNotifications } from "@calcom/features/group-polls/lib";
+import { checkAndSendSlackNotifications } from "@calcom/features/group-polls/lib/slackNotifications";
 import { parseTimeString, parseDateString } from "@calcom/features/group-polls/lib/timeUtils";
 import { prisma } from "@calcom/prisma";
 
@@ -93,7 +93,7 @@ export default async function handler({ input }: SubmitMultiPollResponseOptions)
         pollShareSlug: poll.shareSlug,
         respondedParticipantName: participant.name,
         respondedParticipantType: participant.type,
-      }).catch((err) => {
+      }).catch((err: unknown) => {
         console.error("[Slack] Background notification failed:", err);
       });
     }
