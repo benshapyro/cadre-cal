@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { useIsEmbed } from "@calcom/embed-core/embed-iframe";
 import UnconfirmedBookingBadge from "@calcom/features/bookings/UnconfirmedBookingBadge";
+import OpenPollsBadge from "@calcom/features/group-polls/OpenPollsBadge";
 import {
   useOrgBranding,
   type OrganizationBranding,
@@ -73,6 +74,12 @@ const getNavigationItems = (orgBranding: OrganizationBranding): NavigationItemTy
     name: "availability",
     href: "/availability",
     icon: "clock",
+  },
+  {
+    name: "group_polls",
+    href: "/group-polls",
+    icon: "handshake",
+    badge: <OpenPollsBadge />,
   },
   ...(orgBranding
     ? [

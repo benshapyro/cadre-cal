@@ -1039,6 +1039,8 @@
   "here": "here",
   "manage_your_billing_info": "Manage your billing information and cancel your subscription.",
   "availability": "Availability",
+  "group_polls": "Group Polls",
+  "open_polls_tooltip": "Open polls awaiting responses",
   "edit_availability": "Edit availability",
   "configure_availability": "Configure times when you are available for bookings.",
   "copy_times_to": "Copy times to",

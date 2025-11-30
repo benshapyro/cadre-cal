@@ -8,6 +8,12 @@ import { ZGetGroupPollSchema } from "./get.schema";
 import { ZUpdateGroupPollSchema } from "./update.schema";
 
 export const groupPollsRouter = router({
+  // Count of open polls for sidebar badge
+  openCount: authedProcedure.query(async ({ ctx }) => {
+    const { openCountHandler } = await import("./openCount.handler");
+    return openCountHandler({ ctx });
+  }),
+
   // List all polls created by the user
   list: authedProcedure.query(async ({ ctx }) => {
     const { listHandler } = await import("./list.handler");
