@@ -30,13 +30,16 @@ export default class BaseEmail {
     return {};
   }
   public async sendEmail() {
+    console.log(`[Email Send] Starting sendEmail for ${this.name}`);
+
     const featuresRepository = new FeaturesRepository(prisma);
     const emailsDisabled = await featuresRepository.checkIfFeatureIsEnabledGlobally("emails");
     /** If email kill switch exists and is active, we prevent emails being sent. */
     if (emailsDisabled) {
-      console.warn("Skipped Sending Email due to active Kill Switch");
+      console.warn("[Email Send] Skipped Sending Email due to active Kill Switch");
       return new Promise((r) => r("Skipped Sending Email due to active Kill Switch"));
     }
+    console.log("[Email Send] Kill switch check passed");
 
     if (process.env.INTEGRATION_TEST_MODE === "true") {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -49,12 +52,14 @@ export default class BaseEmail {
     }
 
     const payload = await this.getNodeMailerPayload();
+    console.log("[Email Send] Payload generated");
 
     const from = "from" in payload ? (payload.from as string) : "";
     const to = "to" in payload ? (payload.to as string) : "";
+    console.log(`[Email Send] From: ${from}, To: ${to}`);
 
     if (isSmsCalEmail(to)) {
-      console.log(`Skipped Sending Email to faux email: ${to}`);
+      console.log(`[Email Send] Skipped Sending Email to faux email: ${to}`);
       return new Promise((r) => r(`Skipped Sending Email to faux email: ${to}`));
     }
 
@@ -71,28 +76,39 @@ export default class BaseEmail {
       },
       ...(parseSubject.success && { subject: decodeHTML(parseSubject.data) }),
     };
+
+    console.log("[Email Send] About to create nodemailer transport");
+    console.log("[Email Send] Transport config:", JSON.stringify(this.getMailerOptions().transport, null, 2));
+
     const { createTransport } = await import("nodemailer");
+    const transport = createTransport(this.getMailerOptions().transport);
+
+    console.log("[Email Send] Transport created, sending email...");
+
     await new Promise((resolve, reject) =>
-      createTransport(this.getMailerOptions().transport).sendMail(
+      transport.sendMail(
         payloadWithUnEscapedSubject,
         (_err, info) => {
           if (_err) {
             const err = getErrorFromUnknown(_err);
+            console.error("[Email Send] sendMail ERROR:", err.message);
             this.printNodeMailerError(err);
             reject(err);
           } else {
+            console.log("[Email Send] sendMail SUCCESS:", JSON.stringify(info));
             resolve(info);
           }
         }
       )
-    ).catch((e) =>
+    ).catch((e) => {
       console.error(
-        "sendEmail",
+        "[Email Send] Promise catch error:",
         `from: ${"from" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.from : ""}`,
         `subject: ${"subject" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.subject : ""}`,
         e
-      )
-    );
+      );
+    });
+    console.log("[Email Send] sendEmail completed");
     return new Promise((resolve) => resolve("send mail async"));
   }
   protected getMailerOptions() {

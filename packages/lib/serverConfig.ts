@@ -6,7 +6,16 @@ import { isENVDev } from "@calcom/lib/env";
 import { getAdditionalEmailHeaders } from "./getAdditionalEmailHeaders";
 
 function detectTransport(): SendmailTransport.Options | SMTPConnection.Options | string {
+  // Debug logging for email configuration
+  console.log("[Email Config] Detecting transport...");
+  console.log("[Email Config] RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
+  console.log("[Email Config] RESEND_API_KEY length:", process.env.RESEND_API_KEY?.length || 0);
+  console.log("[Email Config] EMAIL_FROM:", process.env.EMAIL_FROM);
+  console.log("[Email Config] EMAIL_SERVER exists:", !!process.env.EMAIL_SERVER);
+  console.log("[Email Config] EMAIL_SERVER_HOST:", process.env.EMAIL_SERVER_HOST);
+
   if (process.env.RESEND_API_KEY) {
+    console.log("[Email Config] Using RESEND SMTP transport (smtp.resend.com:465)");
     const transport = {
       host: "smtp.resend.com",
       secure: true,
@@ -21,10 +30,12 @@ function detectTransport(): SendmailTransport.Options | SMTPConnection.Options |
   }
 
   if (process.env.EMAIL_SERVER) {
+    console.log("[Email Config] Using EMAIL_SERVER connection string");
     return process.env.EMAIL_SERVER;
   }
 
   if (process.env.EMAIL_SERVER_HOST) {
+    console.log("[Email Config] Using EMAIL_SERVER_HOST:", process.env.EMAIL_SERVER_HOST);
     const port = parseInt(process.env.EMAIL_SERVER_PORT || "");
     const auth =
       process.env.EMAIL_SERVER_USER && process.env.EMAIL_SERVER_PASSWORD
@@ -47,6 +58,7 @@ function detectTransport(): SendmailTransport.Options | SMTPConnection.Options |
     return transport;
   }
 
+  console.log("[Email Config] WARNING: Falling back to sendmail (likely won't work in container!)");
   return {
     sendmail: true,
     newline: "unix",
