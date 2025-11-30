@@ -209,44 +209,43 @@ export default function GroupPollsCreateView() {
           </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {fields.map((field, index) => (
-            <div key={field.id} className="border-subtle flex items-start gap-4 rounded-md border p-4">
-              <div className="flex-1 space-y-3">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <TextField
-                    label="Name"
-                    placeholder="John Doe"
-                    {...form.register(`participants.${index}.name`)}
-                    required
-                  />
-                  <EmailField
-                    label="Email"
-                    placeholder="john@example.com"
-                    {...form.register(`participants.${index}.email`)}
-                    required
-                  />
-                  <SelectField
-                    label="Type"
-                    options={participantTypeOptions}
-                    value={participantTypeOptions.find(
-                      (opt) => opt.value === form.watch(`participants.${index}.type`)
-                    )}
-                    onChange={(opt) =>
-                      form.setValue(`participants.${index}.type`, opt?.value || ParticipantType.CLIENT)
-                    }
-                  />
-                </div>
+            <div key={field.id} className="border-subtle flex items-center gap-3 rounded-md border p-3">
+              <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-3">
+                <TextField
+                  label={index === 0 ? "Name" : ""}
+                  placeholder="John Doe"
+                  {...form.register(`participants.${index}.name`)}
+                  required
+                />
+                <EmailField
+                  label={index === 0 ? "Email" : ""}
+                  placeholder="john@example.com"
+                  {...form.register(`participants.${index}.email`)}
+                  required
+                />
+                <SelectField
+                  label={index === 0 ? "Type" : ""}
+                  options={participantTypeOptions}
+                  value={participantTypeOptions.find(
+                    (opt) => opt.value === form.watch(`participants.${index}.type`)
+                  )}
+                  onChange={(opt) =>
+                    form.setValue(`participants.${index}.type`, opt?.value || ParticipantType.CLIENT)
+                  }
+                />
               </div>
-              {fields.length > 1 && (
+              {fields.length > 1 ? (
                 <Button
                   type="button"
                   color="destructive"
                   variant="icon"
                   StartIcon="trash-2"
                   onClick={() => remove(index)}
-                  className="mt-6"
                 />
+              ) : (
+                <div className="w-10" /> // Spacer to keep alignment
               )}
             </div>
           ))}

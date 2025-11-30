@@ -337,25 +337,25 @@ export function GroupPollsEditView({ pollId }: GroupPollsEditViewProps) {
         {newFields.length === 0 ? (
           <p className="text-subtle text-sm">No new participants to add.</p>
         ) : (
-          <div className="space-y-4">
-            {newFields.map((field, index) => (
-              <div key={field.id} className="border-subtle flex items-start gap-4 rounded-md border p-4">
-                <div className="flex-1 space-y-3">
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <>
+            <div className="space-y-3">
+              {newFields.map((field, index) => (
+                <div key={field.id} className="border-subtle flex items-center gap-3 rounded-md border p-3">
+                  <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-3">
                     <TextField
-                      label="Name"
+                      label={index === 0 ? "Name" : ""}
                       placeholder="John Doe"
                       {...form.register(`newParticipants.${index}.name`)}
                       required
                     />
                     <EmailField
-                      label="Email"
+                      label={index === 0 ? "Email" : ""}
                       placeholder="john@example.com"
                       {...form.register(`newParticipants.${index}.email`)}
                       required
                     />
                     <SelectField
-                      label="Type"
+                      label={index === 0 ? "Type" : ""}
                       options={participantTypeOptions}
                       value={participantTypeOptions.find(
                         (opt) => opt.value === form.watch(`newParticipants.${index}.type`)
@@ -365,18 +365,17 @@ export function GroupPollsEditView({ pollId }: GroupPollsEditViewProps) {
                       }
                     />
                   </div>
+                  <Button
+                    type="button"
+                    color="destructive"
+                    variant="icon"
+                    StartIcon="trash-2"
+                    onClick={() => removeNew(index)}
+                  />
                 </div>
-                <Button
-                  type="button"
-                  color="destructive"
-                  variant="icon"
-                  StartIcon="trash-2"
-                  onClick={() => removeNew(index)}
-                  className="mt-6"
-                />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
