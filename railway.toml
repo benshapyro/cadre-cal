@@ -9,7 +9,7 @@ CALENDSO_ENCRYPTION_KEY = "${{CALENDSO_ENCRYPTION_KEY}}"
 CALCOM_TELEMETRY_DISABLED = "1"
 NEXT_PUBLIC_WEBAPP_URL = "https://cal.cadreai.com"
 NEXTAUTH_URL = "https://cal.cadreai.com"
-CACHEBUST = "2025-11-30-2fa-debug-logging"
+CACHEBUST = "2025-11-30-force-url-rebuild-v2"
 
 [deploy]
 healthcheckPath = "/"
