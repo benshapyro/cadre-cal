@@ -1,8 +1,8 @@
 # Cadre Calendar - Current Status
 
 **Last Updated:** 2025-11-30
-**Current Phase:** Phase 1C Complete - Code Quality & Polish
-**Overall Status:** 🟢 Production Ready - All Features + Code Quality Complete
+**Current Phase:** Phase 1D Complete - UX Improvements
+**Overall Status:** 🟢 Production Ready - All Features + UX Polish Complete
 
 ---
 
@@ -300,6 +300,17 @@
 - Phase 0B: Google OAuth on Railway (can add later)
 - Phase 0C: Team Onboarding (deferred until after launch)
 
+### ✅ Phase 1D: UX Improvements (2025-11-30)
+
+**Navigation & Discoverability:**
+- ✅ Added "Group Polls" to sidebar navigation (after Availability)
+- ✅ Added open polls badge showing count of active polls
+- ✅ Participant form cleanup - labels only on first row, not repeated
+
+**Production Fixes:**
+- ✅ App Store seeded (102 apps now available)
+- ✅ Removed debug logging from 2FA setup route
+
 ---
 
 ## What Works
@@ -383,6 +394,7 @@ git status
 | Phase 1: Group Polls Core | ✅ Complete | 2025-11-27 | 2025-11-27 |
 | Phase 1B: Testing, Heat Map, Email | ✅ Complete | 2025-11-27 | 2025-11-28 |
 | Phase 1C: Code Quality & Polish | ✅ Complete | 2025-11-29 | 2025-11-29 |
+| Phase 1D: UX Improvements | ✅ Complete | 2025-11-30 | 2025-11-30 |
 | Phase 2: Booking Integration | ✅ Complete (with calendar sync) | 2025-11-28 | 2025-11-29 |
 | Phase 5: Public Poll Link & QR Code | ✅ Complete | 2025-11-29 | 2025-11-29 |
 | Phase 6: Slack App Integration | ✅ Complete | 2025-11-28 | 2025-11-28 |

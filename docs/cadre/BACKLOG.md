@@ -130,26 +130,18 @@ Production issues and improvements for cal.cadreai.com.
 
 ### [BUG-004] App Store shows only "Cal Video" in production
 - **Reported**: 2025-11-30
-- **Status**: Open - Fix Required
+- **Status**: ✅ Fixed (2025-11-30)
 - **Priority**: P2 (Medium) - Cosmetic but limits integrations
 - **Description**: Production App Store page shows "Cal Video" repeated for all apps, while local shows 28+ apps (Zoom, Google Calendar, Zoho, etc.)
-- **Steps to Reproduce**:
-  1. Go to cal.cadreai.com/apps
-  2. Observe all tiles show "Cal Video"
-  3. Compare to local which shows full app catalog
-- **Expected**: Full app catalog displayed (Zoom, Google Calendar, Slack, etc.)
-- **Actual**: Only "Cal Video" shown for every app tile
-- **Root Cause Analysis**:
-  - Apps are stored in the database `App` table
-  - The `scripts/seed-app-store.ts` script populates this table from `appStoreMetadata`
-  - **Local**: `yarn db-seed` runs the seed script, creating 100+ app entries
-  - **Production**: Only migrations ran, seed script never executed
-  - Cal Video is the default fallback when no app data exists
-- **Fix Required**:
-  1. Run seed script on production: `yarn seed-app-store`
-  2. Or via Railway CLI: `railway run yarn seed-app-store`
-  3. Consider adding to deployment workflow after migrations
-- **Note**: Apps requiring API credentials (Zoom, Google, etc.) will appear but won't work until credentials configured in `.env.appStore`
+- **Root Cause**: `scripts/seed-app-store.ts` never ran on production - only migrations did
+- **Fix Applied**: Ran seed script locally with public DATABASE_URL:
+  ```bash
+  DATABASE_URL="postgresql://...@switchyard.proxy.rlwy.net:32712/railway" \
+  DATABASE_DIRECT_URL="postgresql://...@switchyard.proxy.rlwy.net:32712/railway" \
+  npx ts-node --transpile-only scripts/seed-app-store.ts
+  ```
+- **Result**: 102 apps now in production database
+- **Note**: Apps requiring API credentials (Zoom, Google, etc.) appear but won't work until credentials configured
 
 ---
 
@@ -288,8 +280,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 4
-- **Bugs**: 4 (1 fixed, 1 analyzed - not a bug, 2 fix pending production)
+- **Total Open**: 3
+- **Bugs**: 4 (2 fixed, 1 analyzed - not a bug, 1 fix pending production)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-11-30
