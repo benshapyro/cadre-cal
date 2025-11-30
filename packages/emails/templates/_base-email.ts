@@ -77,37 +77,72 @@ export default class BaseEmail {
       ...(parseSubject.success && { subject: decodeHTML(parseSubject.data) }),
     };
 
-    console.log("[Email Send] About to create nodemailer transport");
-    console.log("[Email Send] Transport config:", JSON.stringify(this.getMailerOptions().transport, null, 2));
+    // Check if we should use Resend HTTP API (bypasses SMTP port blocking)
+    if (process.env.RESEND_API_KEY) {
+      console.log("[Email Send] Using Resend HTTP API (SMTP ports blocked)");
 
-    const { createTransport } = await import("nodemailer");
-    const transport = createTransport(this.getMailerOptions().transport);
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: sanitizedFrom,
+            to: [sanitizedTo],
+            subject: parseSubject.success ? decodeHTML(parseSubject.data) : "",
+            html: payloadWithUnEscapedSubject.html as string,
+            text: payloadWithUnEscapedSubject.text as string,
+          }),
+        });
 
-    console.log("[Email Send] Transport created, sending email...");
+        const result = await response.json();
 
-    await new Promise((resolve, reject) =>
-      transport.sendMail(
-        payloadWithUnEscapedSubject,
-        (_err, info) => {
-          if (_err) {
-            const err = getErrorFromUnknown(_err);
-            console.error("[Email Send] sendMail ERROR:", err.message);
-            this.printNodeMailerError(err);
-            reject(err);
-          } else {
-            console.log("[Email Send] sendMail SUCCESS:", JSON.stringify(info));
-            resolve(info);
-          }
+        if (!response.ok) {
+          console.error("[Email Send] Resend API ERROR:", JSON.stringify(result));
+          throw new Error(`Resend API error: ${JSON.stringify(result)}`);
         }
-      )
-    ).catch((e) => {
-      console.error(
-        "[Email Send] Promise catch error:",
-        `from: ${"from" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.from : ""}`,
-        `subject: ${"subject" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.subject : ""}`,
-        e
-      );
-    });
+
+        console.log("[Email Send] Resend API SUCCESS:", JSON.stringify(result));
+      } catch (e) {
+        console.error("[Email Send] Resend API catch error:", e);
+        throw e;
+      }
+    } else {
+      // Fallback to nodemailer SMTP for non-Resend configurations
+      console.log("[Email Send] About to create nodemailer transport");
+      console.log("[Email Send] Transport config:", JSON.stringify(this.getMailerOptions().transport, null, 2));
+
+      const { createTransport } = await import("nodemailer");
+      const transport = createTransport(this.getMailerOptions().transport);
+
+      console.log("[Email Send] Transport created, sending email...");
+
+      await new Promise((resolve, reject) =>
+        transport.sendMail(
+          payloadWithUnEscapedSubject,
+          (_err, info) => {
+            if (_err) {
+              const err = getErrorFromUnknown(_err);
+              console.error("[Email Send] sendMail ERROR:", err.message);
+              this.printNodeMailerError(err);
+              reject(err);
+            } else {
+              console.log("[Email Send] sendMail SUCCESS:", JSON.stringify(info));
+              resolve(info);
+            }
+          }
+        )
+      ).catch((e) => {
+        console.error(
+          "[Email Send] Promise catch error:",
+          `from: ${"from" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.from : ""}`,
+          `subject: ${"subject" in payloadWithUnEscapedSubject ? payloadWithUnEscapedSubject.subject : ""}`,
+          e
+        );
+      });
+    }
     console.log("[Email Send] sendEmail completed");
     return new Promise((resolve) => resolve("send mail async"));
   }

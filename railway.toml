@@ -9,7 +9,7 @@ CALENDSO_ENCRYPTION_KEY = "${{CALENDSO_ENCRYPTION_KEY}}"
 CALCOM_TELEMETRY_DISABLED = "1"
 NEXT_PUBLIC_WEBAPP_URL = "https://cal.cadreai.com"
 NEXTAUTH_URL = "https://cal.cadreai.com"
-CACHEBUST = "2025-11-29-smtp-port-587"
+CACHEBUST = "2025-11-30-resend-http-api"
 
 [deploy]
 healthcheckPath = "/"
