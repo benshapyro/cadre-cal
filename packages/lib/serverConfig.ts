@@ -15,14 +15,19 @@ function detectTransport(): SendmailTransport.Options | SMTPConnection.Options |
   console.log("[Email Config] EMAIL_SERVER_HOST:", process.env.EMAIL_SERVER_HOST);
 
   if (process.env.RESEND_API_KEY) {
-    console.log("[Email Config] Using RESEND SMTP transport (smtp.resend.com:465)");
+    // Use port 587 (STARTTLS) instead of 465 (SSL) - some platforms block 465
+    console.log("[Email Config] Using RESEND SMTP transport (smtp.resend.com:587 STARTTLS)");
     const transport = {
       host: "smtp.resend.com",
-      secure: true,
-      port: 465,
+      secure: false, // Use STARTTLS instead of direct SSL
+      port: 587,
       auth: {
         user: "resend",
         pass: process.env.RESEND_API_KEY,
+      },
+      tls: {
+        // Upgrade to TLS after connection (STARTTLS)
+        ciphers: "SSLv3",
       },
     };
 
