@@ -1,7 +1,7 @@
 # Cal.com Architecture Overview
 
 > **Purpose:** Document Cal.com architecture patterns discovered during exploration to guide Group Polls implementation.
-> **Last Updated:** 2025-11-27
+> **Last Updated:** 2025-11-30
 
 ---
 

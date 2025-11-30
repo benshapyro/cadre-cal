@@ -128,6 +128,29 @@ Production issues and improvements for cal.cadreai.com.
   - `packages/lib/crypto.ts` - `symmetricEncrypt()` requires 32-byte key
   - `apps/web/app/api/auth/two-factor/totp/setup/route.ts` - calls symmetricEncrypt
 
+### [BUG-004] App Store shows only "Cal Video" in production
+- **Reported**: 2025-11-30
+- **Status**: Open - Fix Required
+- **Priority**: P2 (Medium) - Cosmetic but limits integrations
+- **Description**: Production App Store page shows "Cal Video" repeated for all apps, while local shows 28+ apps (Zoom, Google Calendar, Zoho, etc.)
+- **Steps to Reproduce**:
+  1. Go to cal.cadreai.com/apps
+  2. Observe all tiles show "Cal Video"
+  3. Compare to local which shows full app catalog
+- **Expected**: Full app catalog displayed (Zoom, Google Calendar, Slack, etc.)
+- **Actual**: Only "Cal Video" shown for every app tile
+- **Root Cause Analysis**:
+  - Apps are stored in the database `App` table
+  - The `scripts/seed-app-store.ts` script populates this table from `appStoreMetadata`
+  - **Local**: `yarn db-seed` runs the seed script, creating 100+ app entries
+  - **Production**: Only migrations ran, seed script never executed
+  - Cal Video is the default fallback when no app data exists
+- **Fix Required**:
+  1. Run seed script on production: `yarn seed-app-store`
+  2. Or via Railway CLI: `railway run yarn seed-app-store`
+  3. Consider adding to deployment workflow after migrations
+- **Note**: Apps requiring API credentials (Zoom, Google, etc.) will appear but won't work until credentials configured in `.env.appStore`
+
 ---
 
 ## Enhancements
@@ -144,7 +167,30 @@ Production issues and improvements for cal.cadreai.com.
 - **Implementation**: (commit/PR link when done)
 -->
 
-(No enhancements reported yet)
+### [ENH-001] Show pending poll count badge in sidebar
+- **Reported**: 2025-11-30
+- **Status**: ✅ Done
+- **Priority**: P3 (Low)
+- **Description**: Show badge with count of pending/active polls needing attention in sidebar navigation
+- **User Impact**: Poll organizers can quickly see if they have polls awaiting responses or ready to finalize
+- **Proposed Solution**:
+  - Create `GroupPollsBadge` component similar to `UnconfirmedBookingBadge`
+  - Query count of polls with status `OPEN` (active polls awaiting responses)
+  - Display count in red badge next to "Group Polls" nav item
+  - Reference: `packages/features/bookings/components/UnconfirmedBookingBadge.tsx`
+- **Implementation**:
+  1. Create `packages/features/group-polls/components/GroupPollsBadge.tsx`
+  2. Add tRPC endpoint `viewer.groupPolls.pendingCount`
+  3. Add badge to nav item:
+     ```typescript
+     {
+       name: "group_polls",
+       href: "/group-polls",
+       icon: "vote",
+       badge: <GroupPollsBadge />,
+     }
+     ```
+- **Depends on**: UX-001 (sidebar nav item)
 
 ---
 
@@ -162,7 +208,28 @@ Production issues and improvements for cal.cadreai.com.
 - **Implementation**: (commit/PR link when done)
 -->
 
-(No UX improvements reported yet)
+### [UX-001] Add Group Polls to sidebar navigation
+- **Reported**: 2025-11-30
+- **Status**: ✅ Done
+- **Priority**: P2 (Medium)
+- **Description**: Group Polls feature is only accessible via direct URL (`/group-polls`), not discoverable in sidebar
+- **Current Behavior**: Users must know the URL to access Group Polls
+- **Proposed Behavior**: Add "Group Polls" item to sidebar after "Availability" with `handshake` icon
+- **Analysis**:
+  - Navigation defined in `packages/features/shell/navigation/Navigation.tsx`
+  - Translation needed in `apps/web/public/static/locales/en/common.json`
+  - Recommended position: After Availability (position 4) - natural scheduling workflow
+  - Icon options: `vote` (best), `clipboard-check`, `messages-square`
+- **Implementation**:
+  1. Add `"group_polls": "Group Polls"` to translation file
+  2. Add nav item to `getNavigationItems()` array after availability:
+     ```typescript
+     {
+       name: "group_polls",
+       href: "/group-polls",
+       icon: "vote",
+     }
+     ```
 
 ---
 
@@ -173,8 +240,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 1
-- **Bugs**: 3 (1 fixed, 1 analyzed - not a bug, 1 investigating)
-- **Enhancements**: 0
-- **UX**: 0
+- **Total Open**: 2
+- **Bugs**: 4 (1 fixed, 1 analyzed - not a bug, 2 fix pending production)
+- **Enhancements**: 1 (done)
+- **UX**: 1 (done)
 - **Last Updated**: 2025-11-30

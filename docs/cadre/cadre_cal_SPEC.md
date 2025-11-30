@@ -1,7 +1,7 @@
 # Cadre Group Polls — Specification
 
 > **Document Status:** Living Document
-> **Last Updated:** 2025-11-27
+> **Last Updated:** 2025-11-30
 > **Owner:** Ben @ Cadre AI
 
 ---
