@@ -54,26 +54,23 @@ Production issues and improvements for cal.cadreai.com.
   - `EMAIL_FROM_NAME` = `Cadre Calendar` ✓
   - `EMAIL_SERVER_*` = set but IGNORED (redundant with RESEND_API_KEY)
 - **Root Cause Analysis** (2025-11-29):
-  1. **Resend shows "no sent emails yet"** - Cal.com flow runs but Resend rejects/ignores
-  2. **Database Investigation Results**:
+  1. **Initial Finding**: Resend shows "no sent emails yet" despite correct config
+  2. **Database Investigation** (all passed):
      - ✅ User exists: `ben@gocadre.ai` (id=1, emailVerified: 2025-11-27)
      - ✅ Email kill switch OFF: `Feature.emails.enabled = false`
-     - ✅ Password reset requests created: 4 entries in `ResetPasswordRequest` table
-     - **Conclusion**: The password reset flow works correctly, email delivery fails
-  3. **Root Cause: Domain Not Verified in Resend**
-     - `EMAIL_FROM` = `notifications@cadreai.com`
-     - Resend requires domain verification before sending from custom domains
-     - Without verification, Resend silently drops emails
-     - Reference: [Resend Domain Docs](https://resend.com/docs/dashboard/domains/introduction)
-- **Fix Required**:
-  1. Go to [resend.com/domains](https://resend.com/domains)
-  2. Add `cadreai.com` domain
-  3. Add DNS records (DKIM/SPF) that Resend provides
-  4. Wait for verification (minutes to 72 hours)
-  5. Test password reset again
-- **Workaround** (for immediate testing):
-  - Change `EMAIL_FROM` to `onboarding@resend.dev` (Resend's pre-verified test domain)
-- **Status**: Awaiting domain verification in Resend
+     - ✅ Password reset requests created in `ResetPasswordRequest` table
+  3. **Domain Verification**: Fixed `EMAIL_FROM` to use `notifications@cal.cadreai.com` (verified domain)
+  4. **ACTUAL ROOT CAUSE: Railway blocks SMTP ports**
+     - Port 465 (SSL): `ETIMEDOUT` - connection timeout
+     - Port 587 (STARTTLS): Also blocked - hangs indefinitely
+     - Railway blocks outbound SMTP to prevent spam abuse
+- **Fix Implemented** (2025-11-30):
+  - Changed from nodemailer SMTP to **Resend HTTP API**
+  - Uses `fetch("https://api.resend.com/emails")` instead of SMTP
+  - HTTP/HTTPS (port 443) is not blocked by Railway
+  - Code: `packages/emails/templates/_base-email.ts`
+  - Commits: `8d79e28` - Resend HTTP API implementation
+- **Status**: Fix deployed, awaiting test verification
 
 ---
 
