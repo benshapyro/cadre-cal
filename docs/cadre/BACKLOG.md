@@ -29,7 +29,7 @@ Production issues and improvements for cal.cadreai.com.
 
 ### [BUG-001] Password reset email not received
 - **Reported**: 2025-11-29
-- **Status**: Investigating
+- **Status**: ✅ Fixed
 - **Priority**: P1 (High)
 - **Description**: User requested password reset, UI shows "Reset link sent" but email never arrives
 - **Steps to Reproduce**:
@@ -70,7 +70,28 @@ Production issues and improvements for cal.cadreai.com.
   - HTTP/HTTPS (port 443) is not blocked by Railway
   - Code: `packages/emails/templates/_base-email.ts`
   - Commits: `8d79e28` - Resend HTTP API implementation
-- **Status**: Fix deployed, awaiting test verification
+- **Status**: ✅ Fixed and verified (2025-11-30)
+- **Resolution**: Email received, password reset successful
+
+### [BUG-002] Admin password/2FA warning shown despite valid password
+- **Reported**: 2025-11-30
+- **Status**: ✅ Analyzed - Not a bug (expected behavior)
+- **Priority**: P3 (Low) - User action required
+- **Description**: After login, orange banner shows "You are admin but you do not have a password length of at least 15 characters or no 2FA yet" even though password is 15+ characters with numbers and mixed case
+- **Steps to Reproduce**:
+  1. Login to cal.cadreai.com as admin user
+  2. See orange banner warning about password/2FA
+- **Expected**: No warning if password meets 15+ character requirement
+- **Actual**: Warning shown despite password being 15+ characters
+- **Root Cause Analysis**:
+  - Code: `packages/features/auth/lib/next-auth-options.ts:262`
+  - Logic: `isPasswordValid(credentials.password, false, true) && user.twoFactorEnabled`
+  - Cal.com requires **BOTH** conditions for admin access (not OR):
+    1. Password 15+ chars with uppercase, lowercase, number
+    2. **AND** 2FA enabled
+  - Banner message is misleading - says "or" but code uses "AND"
+- **Fix**: Enable 2FA at `/settings/security/two-factor-auth`
+- **Status**: Not a bug - expected Cal.com behavior for admin security
 
 ---
 
@@ -117,8 +138,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 1
-- **Bugs**: 1
+- **Total Open**: 0
+- **Bugs**: 2 (1 fixed, 1 analyzed - not a bug)
 - **Enhancements**: 0
 - **UX**: 0
-- **Last Updated**: 2025-11-29
+- **Last Updated**: 2025-11-30
