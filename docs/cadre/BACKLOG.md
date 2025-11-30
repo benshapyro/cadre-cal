@@ -93,6 +93,45 @@ Production issues and improvements for cal.cadreai.com.
 - **Fix**: Enable 2FA at `/settings/security/two-factor-auth`
 - **Status**: Not a bug - expected Cal.com behavior for admin security
 
+### [BUG-003] 2FA enable shows "Password is incorrect" when password is valid
+- **Reported**: 2025-11-30
+- **Status**: 🔍 Investigating
+- **Priority**: P1 (High) - Blocks admin from enabling 2FA
+- **Description**: When trying to enable 2FA, entering the correct password results in "Password is incorrect" error, even though the same password works correctly in the change password flow
+- **Steps to Reproduce**:
+  1. Login to cal.cadreai.com as admin user
+  2. Go to Settings → Security → Two-Factor Authentication
+  3. Toggle 2FA on
+  4. Enter current password in the modal
+  5. Click Continue
+- **Expected**: Password accepted, QR code displayed for authenticator setup
+- **Actual**: "Password is incorrect" error displayed
+- **Verification**: Password confirmed valid in change password flow (error: "New password matches old password" when trying to reuse it)
+- **Root Cause Investigation**:
+  - **2FA setup flow**: `apps/web/app/api/auth/two-factor/totp/setup/route.ts`
+    - Uses `parseRequestData(req)` to get body.password
+    - Uses `getServerSession({ req: buildLegacyRequest(...) })` for auth
+    - Verifies: `verifyPassword(body.password, user.password.hash)`
+  - **Change password flow**: `packages/trpc/server/routers/viewer/auth/changePassword.handler.ts`
+    - Uses tRPC mutation with session from context
+    - Verifies: `verifyPassword(oldPassword, currentPassword)`
+  - **Both use identical** `verifyPassword()` function (bcrypt.compare)
+  - **Possible causes**:
+    1. Session/user mismatch between App Router API route and tRPC
+    2. Password encoding/escaping issue in request body
+    3. Special characters in password handled differently
+    4. `buildLegacyRequest` may not correctly pass all session info
+- **Debug Strategy**:
+  1. Add logging to 2FA setup route to inspect body.password and user.password.hash
+  2. Compare session.user.id in both flows
+  3. Test with a simple password (no special characters)
+- **Workaround**: None currently - user cannot enable 2FA
+- **Files Involved**:
+  - `apps/web/app/api/auth/two-factor/totp/setup/route.ts` (lines 32-58)
+  - `apps/web/components/settings/EnableTwoFactorModal.tsx`
+  - `apps/web/components/settings/TwoFactorAuthAPI.ts`
+  - `packages/features/auth/lib/verifyPassword.ts`
+
 ---
 
 ## Enhancements
@@ -138,8 +177,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 0
-- **Bugs**: 2 (1 fixed, 1 analyzed - not a bug)
+- **Total Open**: 1
+- **Bugs**: 3 (1 fixed, 1 analyzed - not a bug, 1 investigating)
 - **Enhancements**: 0
 - **UX**: 0
 - **Last Updated**: 2025-11-30
