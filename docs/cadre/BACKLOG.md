@@ -192,6 +192,40 @@ Production issues and improvements for cal.cadreai.com.
      ```
 - **Depends on**: UX-001 (sidebar nav item)
 
+### [ENH-002] Add required/optional distinction for Client participants
+- **Reported**: 2025-11-30
+- **Status**: Open - Future
+- **Priority**: P3 (Low) - Future enhancement
+- **Description**: Currently only Cadre members can be marked required/optional. Clients should have the same distinction.
+- **Current State**: `ParticipantType` enum has: `CADRE_REQUIRED`, `CADRE_OPTIONAL`, `CLIENT`
+- **User Impact**: More flexible scheduling - some external participants may be optional
+- **Recommended Approach**: Separate `type` from `isRequired` (not more enum values)
+  ```prisma
+  enum ParticipantType {
+    CADRE
+    CLIENT
+  }
+
+  model GroupPollParticipant {
+    type       ParticipantType
+    isRequired Boolean @default(true)
+  }
+  ```
+- **Why this approach**:
+  - Cleaner schema, no combinatorial explosion
+  - Simpler UI: dropdown for type + checkbox for required
+  - Easier queries: `WHERE isRequired = true` vs `WHERE type IN (...)`
+  - Extensible: adding new types (e.g., `VENDOR`) doesn't require `_REQUIRED`/`_OPTIONAL` variants
+- **UI Change**: `[Name] [Email] [Type ▼] [☑ Required] [🗑]`
+- **Scope**: Medium-Large - affects multiple areas:
+  - Schema: Refactor enum + add `isRequired` boolean + migration
+  - UI: Update create/edit forms with checkbox
+  - Logic: Finalization algorithm uses `isRequired` field
+  - Heat map: Visual distinction for required vs optional availability
+  - Notifications: Different messaging for required vs optional participants
+- **Migration**: Transform existing `CADRE_REQUIRED` → `CADRE + true`, `CADRE_OPTIONAL` → `CADRE + false`, `CLIENT` → `CLIENT + true`
+- **Notes**: Deferring for now; current simplicity works for MVP
+
 ---
 
 ## UX Improvements
@@ -231,6 +265,20 @@ Production issues and improvements for cal.cadreai.com.
      }
      ```
 
+### [UX-002] Trash icon misaligned on first participant row
+- **Reported**: 2025-11-30
+- **Status**: Open
+- **Priority**: P3 (Low) - Cosmetic polish
+- **Description**: On group-polls/new, the trash icon on the first participant row sits higher than the input fields because it's vertically centered with the full row height (labels + inputs) instead of aligning with just the inputs
+- **Current Behavior**: First row uses `flex items-center`, but labels add height, pushing trash icon above input level
+- **Proposed Behavior**: Trash icon should align with input fields on all rows
+- **Affected Components**:
+  - `apps/web/modules/group-polls/views/group-polls-create-view.tsx:214`
+  - `apps/web/modules/group-polls/views/group-polls-edit-view.tsx` (same pattern)
+- **Implementation Notes**:
+  - Option A: Change `items-center` → `items-end` on row container
+  - Option B: Add `self-end` to the trash button specifically
+
 ---
 
 ## Completed Items
@@ -240,8 +288,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 2
+- **Total Open**: 4
 - **Bugs**: 4 (1 fixed, 1 analyzed - not a bug, 2 fix pending production)
-- **Enhancements**: 1 (done)
-- **UX**: 1 (done)
+- **Enhancements**: 2 (1 done, 1 open)
+- **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-11-30
