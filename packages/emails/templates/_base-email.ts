@@ -92,8 +92,8 @@ export default class BaseEmail {
             from: sanitizedFrom,
             to: [sanitizedTo],
             subject: parseSubject.success ? decodeHTML(parseSubject.data) : "",
-            html: payloadWithUnEscapedSubject.html as string,
-            text: payloadWithUnEscapedSubject.text as string,
+            html: payload.html as string,
+            text: payload.text as string,
           }),
         });
 
