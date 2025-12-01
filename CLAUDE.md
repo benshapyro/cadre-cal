@@ -66,6 +66,31 @@ new Date(y, m - 1, d)
 - Prisma `@db.Time` returns DateTime with 1970-01-01 date - extract HH:mm
 - Use `z.string().regex()` not `z.date()` for frontend date inputs
 
+## Railway Deployment
+
+### NEXT_PUBLIC_* Variables (Build-Time)
+`NEXT_PUBLIC_*` variables are baked into JavaScript at **build time**. They must be in `railway.toml` under `[build.args]`, NOT just Railway's web UI:
+
+```toml
+[build.args]
+NEXT_PUBLIC_WEBAPP_URL = "https://cal.cadreai.com"
+NEXT_PUBLIC_LICENSE_CONSENT = "agree"
+```
+
+Railway web UI variables are runtime-only and won't work for `NEXT_PUBLIC_*`.
+
+### RAILWAY_STATIC_URL Fallback
+Cal.com's `WEBAPP_URL` falls back to `RAILWAY_STATIC_URL` (auto-injected by Railway as `*.railway.app`). To prevent this, set in Railway web UI:
+```
+RAILWAY_STATIC_URL = (empty)
+```
+
+### Force Rebuild
+To force a complete Docker rebuild, bump `CACHEBUST` in `railway.toml`:
+```toml
+CACHEBUST = "2025-11-30-description"
+```
+
 ## Git
 
 ```bash

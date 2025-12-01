@@ -143,6 +143,47 @@ Production issues and improvements for cal.cadreai.com.
 - **Result**: 102 apps now in production database
 - **Note**: Apps requiring API credentials (Zoom, Google, etc.) appear but won't work until credentials configured
 
+### [BUG-005] 2FA login requires double authentication
+- **Reported**: 2025-11-30
+- **Status**: ✅ Fix Applied - Pending Verification
+- **Priority**: P1 (High) - Poor UX, authentication flow broken
+- **Description**: After entering email/password and 2FA code, user is redirected back to login screen and must repeat the entire process
+- **Steps to Reproduce**:
+  1. Go to cal.cadreai.com (or production URL)
+  2. Enter email and password
+  3. Click Sign In
+  4. Enter 2FA authenticator code
+  5. Click Verify (or submit)
+- **Expected**: User is logged in and redirected to dashboard/event-types
+- **Actual**: User is sent back to login screen, must enter email/password and 2FA code again. Second attempt succeeds.
+- **Root Cause**: Same as BUG-006 - `NEXT_PUBLIC_WEBAPP_URL` not baked in at build time, causing URL mismatch in NextAuth callbacks
+- **Fix Applied**: See BUG-006
+
+### [BUG-006] Production routing to railway.app instead of custom domain
+- **Reported**: 2025-11-30
+- **Status**: ✅ Fix Applied - Pending Verification
+- **Priority**: P1 (High) - Security/UX issue, domain mismatch
+- **Description**: After logging in, users are routed to `web-production-7adc5.up.railway.app` instead of `cal.cadreai.com`
+- **Steps to Reproduce**:
+  1. Go to cal.cadreai.com
+  2. Log in successfully
+  3. Observe URL in browser
+- **Expected**: URL shows `cal.cadreai.com/event-types`
+- **Actual**: URL shows `web-production-7adc5.up.railway.app/event-types`
+- **Root Cause Found** (2025-11-30):
+  - `NEXT_PUBLIC_*` vars must be in `railway.toml [build.args]`, not just Railway web UI
+  - Railway web UI vars are runtime-only; `NEXT_PUBLIC_*` vars are baked in at build time
+  - Cal.com's `WEBAPP_URL` in `packages/lib/constants.ts` falls back to `RAILWAY_STATIC_URL` (auto-injected by Railway)
+  - When `NEXT_PUBLIC_WEBAPP_URL` isn't properly baked in, the fallback returns `*.railway.app`
+- **Fix Applied** (2025-11-30):
+  1. Added to `railway.toml [build.args]`:
+     - `NEXT_PUBLIC_WEBAPP_URL = "https://cal.cadreai.com"`
+     - `NEXT_PUBLIC_WEBSITE_URL = "https://cal.cadreai.com"`
+     - `NEXT_PUBLIC_LICENSE_CONSENT = "agree"`
+  2. Set `RAILWAY_STATIC_URL = (empty)` in Railway web UI to prevent fallback
+  3. Bumped `CACHEBUST` to force Docker rebuild
+- **Commits**: `75349f9a40` - Add license consent and website URL as build args
+
 ---
 
 ## Enhancements
@@ -280,8 +321,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 3
-- **Bugs**: 4 (2 fixed, 1 analyzed - not a bug, 1 fix pending production)
+- **Total Open**: 5
+- **Bugs**: 6 (2 fixed, 1 analyzed - not a bug, 1 fix pending production, 2 new open)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-11-30
