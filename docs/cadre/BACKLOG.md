@@ -186,7 +186,7 @@ Production issues and improvements for cal.cadreai.com.
 
 ### [BUG-007] GroupPoll create fails - eventTypeId column missing in production
 - **Reported**: 2025-12-02
-- **Status**: Open
+- **Status**: ✅ Fix Applied - Pending Verification
 - **Priority**: P1 (Critical) - Core feature completely broken in production
 - **Description**: Creating a Group Poll fails with Prisma error "The column `eventTypeId` does not exist in the current database"
 - **Steps to Reproduce**:
@@ -207,6 +207,12 @@ Production issues and improvements for cal.cadreai.com.
   1. Generate new migration: `yarn prisma migrate dev --name add_group_poll_event_booking`
   2. Commit migration file
   3. Push to trigger Railway deploy (runs `prisma migrate deploy`)
+- **Fix Applied** (2025-12-02):
+  - Created migration `20251202000000_add_group_poll_event_booking`
+  - Adds columns: eventTypeId, bookingId, selectedDate, selectedStartTime, selectedEndTime
+  - Adds foreign keys to EventType and Booking tables
+  - Adds indexes for query performance
+- **Commits**: `342d8f570a` - Add missing migration for GroupPoll eventTypeId/bookingId
 
 ---
 
@@ -346,7 +352,7 @@ Items moved here after being fixed/implemented.
 
 ## Statistics
 - **Total Open**: 6
-- **Bugs**: 7 (2 fixed, 1 analyzed - not a bug, 2 fix pending verification, 1 new P1 open)
+- **Bugs**: 7 (2 fixed, 1 analyzed - not a bug, 3 fix pending verification)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-12-02
