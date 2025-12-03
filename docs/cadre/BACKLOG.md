@@ -161,7 +161,7 @@ Production issues and improvements for cal.cadreai.com.
 
 ### [BUG-006] Production routing to railway.app instead of custom domain
 - **Reported**: 2025-11-30
-- **Status**: ✅ Fix Applied - Pending Verification
+- **Status**: 🔄 Fix Incomplete - Still Occurring
 - **Priority**: P1 (High) - Security/UX issue, domain mismatch
 - **Description**: After logging in, users are routed to `web-production-7adc5.up.railway.app` instead of `cal.cadreai.com`
 - **Steps to Reproduce**:
@@ -183,6 +183,21 @@ Production issues and improvements for cal.cadreai.com.
   2. Set `RAILWAY_STATIC_URL = (empty)` in Railway web UI to prevent fallback
   3. Bumped `CACHEBUST` to force Docker rebuild
 - **Commits**: `75349f9a40` - Add license consent and website URL as build args
+- **Post-Fix Status** (2025-12-02):
+  - Issue persists after logout/login cycle
+  - User still redirected to `web-production-7adc5.up.railway.app/event-types`
+  - **Code Analysis**: NextAuth redirect callback (`next-auth-options.ts:1073-1079`) uses:
+    - `WEBAPP_URL` for domain validation
+    - `baseUrl` (from `NEXTAUTH_URL`) for fallback redirects
+  - **Possible Causes**:
+    1. Docker layer caching serving stale build with old `WEBAPP_URL` baked in
+    2. `NEXTAUTH_URL` not properly set at runtime
+    3. `RAILWAY_STATIC_URL` not actually empty (Railway auto-injects it)
+  - **Recommended Actions**:
+    1. Bump `CACHEBUST` to new unique value (e.g., `2025-12-02-force-rebuild`)
+    2. Verify in Railway build logs that `NEXT_PUBLIC_WEBAPP_URL=https://cal.cadreai.com` appears
+    3. Consider removing `*.railway.app` domain entirely from Railway settings
+    4. Add `NEXTAUTH_URL` to Railway web UI runtime vars (not just build args)
 
 ### [BUG-007] GroupPoll create fails - eventTypeId column missing in production
 - **Reported**: 2025-12-02
@@ -216,7 +231,7 @@ Production issues and improvements for cal.cadreai.com.
 
 ### [BUG-008] Users page shows "commercial feature" gate in production
 - **Reported**: 2025-12-02
-- **Status**: ✅ Fixed
+- **Status**: 🔄 Fix Incomplete - Still Occurring
 - **Priority**: P1 (Critical) - Cannot add team members
 - **Description**: Admin Users page (`/settings/admin/users`) shows "This is a commercial feature" and prevents adding users
 - **Root Cause**:
@@ -233,6 +248,11 @@ Production issues and improvements for cal.cadreai.com.
   - `packages/features/ee/common/server/LicenseKeyService.ts:126-140`
   - `turbo.json` - Added env var declaration
 - **Commits**: `8a31e42360` - Allow EE features for self-hosted with license consent
+- **Post-Fix Status** (2025-12-02):
+  - Issue persists despite code fix being deployed
+  - `NEXT_PUBLIC_LICENSE_CONSENT=agree` is a build-time variable that must be baked in
+  - Same root cause as BUG-006: Docker layer caching serving stale build without new env var
+  - **Resolution**: Will be fixed when BUG-006 is resolved (same rebuild needed)
 
 ### [BUG-009] Railway build fails - TypeScript error in inviteMember test
 - **Reported**: 2025-12-02
@@ -254,6 +274,41 @@ Production issues and improvements for cal.cadreai.com.
   - Conditional spread only includes `metadata` field when it has a non-null value
 - **Affected Files**:
   - `packages/trpc/server/routers/viewer/teams/inviteMember/inviteMember.handler.integration-test.ts:93`
+
+### [BUG-010] Railway build fails with "context canceled" after successful compilation
+- **Reported**: 2025-12-02
+- **Status**: Open
+- **Priority**: P0 (Critical) - Blocks all deployments
+- **Description**: Railway build completes all compilation steps successfully but fails at final Docker layer creation with "context canceled"
+- **Error**:
+  ```
+  Build Failed: build daemon returned an error < failed to solve: Canceled: context canceled >
+  ```
+- **What Succeeded**:
+  - yarn install (2m 3s)
+  - tRPC build (50s) - BUG-009 TypeScript fix working
+  - embed-core build (10s)
+  - Next.js compilation (2.2min)
+  - ESLint/type-check (warnings only, no errors)
+  - Static page generation (169/169 ✓)
+  - `Finalizing page optimization`
+  - `Collecting build traces`
+- **What Failed**: Final Docker layer creation/commit step
+- **Log Observations**:
+  - Email config code runs during static page generation (checks `RESEND_API_KEY` 20+ times)
+  - Total build time: ~10+ minutes
+  - Error occurs in Docker infrastructure, not code
+  - 100+ ESLint warnings (all non-blocking)
+- **Possible Causes**:
+  1. Railway build timeout exceeded
+  2. Memory exhaustion during Docker layer creation
+  3. Network interruption to build daemon
+  4. Corrupted Docker cache layer
+- **Recommended Actions**:
+  1. Retry the build (may be transient infrastructure issue)
+  2. Bump `CACHEBUST` in railway.toml to force clean rebuild
+  3. Check Railway status page for infrastructure issues
+  4. If persistent, contact Railway support
 
 ---
 
@@ -392,8 +447,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 4
-- **Bugs**: 9 (4 fixed, 1 analyzed - not a bug, 3 fix pending verification, 1 open)
+- **Total Open**: 7
+- **Bugs**: 10 (3 fixed, 1 not a bug, 2 fix incomplete, 2 pending verification, 1 needs prod fix, 1 infra issue)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-12-02

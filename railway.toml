@@ -11,7 +11,7 @@ NEXT_PUBLIC_WEBAPP_URL = "https://cal.cadreai.com"
 NEXT_PUBLIC_WEBSITE_URL = "https://cal.cadreai.com"
 NEXT_PUBLIC_LICENSE_CONSENT = "agree"
 NEXTAUTH_URL = "https://cal.cadreai.com"
-CACHEBUST = "2025-11-30-license-consent"
+CACHEBUST = "2025-12-02-force-rebuild"
 
 [deploy]
 healthcheckPath = "/"
