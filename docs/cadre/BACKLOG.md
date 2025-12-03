@@ -184,6 +184,30 @@ Production issues and improvements for cal.cadreai.com.
   3. Bumped `CACHEBUST` to force Docker rebuild
 - **Commits**: `75349f9a40` - Add license consent and website URL as build args
 
+### [BUG-007] GroupPoll create fails - eventTypeId column missing in production
+- **Reported**: 2025-12-02
+- **Status**: Open
+- **Priority**: P1 (Critical) - Core feature completely broken in production
+- **Description**: Creating a Group Poll fails with Prisma error "The column `eventTypeId` does not exist in the current database"
+- **Steps to Reproduce**:
+  1. Go to cal.cadreai.com/group-polls/new
+  2. Fill in poll details (title, event type, dates, participants)
+  3. Click "Create Poll"
+- **Expected**: Poll is created successfully
+- **Actual**: Error: `Invalid prisma.groupPoll.create() invocation: The column eventTypeId does not exist in the current database`
+- **Root Cause**:
+  - Schema (`packages/prisma/schema.prisma`) has `eventTypeId` (line 2939) and `bookingId` (line 2943) on GroupPoll model
+  - Migration `20251127153043_add_group_polls` does NOT include these columns
+  - Schema was updated after migration was created, but no follow-up migration was generated
+  - Production DB is missing these columns entirely
+- **Affected Files**:
+  - `packages/prisma/schema.prisma:2939-2943` - Has columns that don't exist in DB
+  - `packages/prisma/migrations/` - Missing migration for new columns
+- **Proposed Fix**:
+  1. Generate new migration: `yarn prisma migrate dev --name add_group_poll_event_booking`
+  2. Commit migration file
+  3. Push to trigger Railway deploy (runs `prisma migrate deploy`)
+
 ---
 
 ## Enhancements
@@ -321,8 +345,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 5
-- **Bugs**: 6 (2 fixed, 1 analyzed - not a bug, 1 fix pending production, 2 new open)
+- **Total Open**: 6
+- **Bugs**: 7 (2 fixed, 1 analyzed - not a bug, 2 fix pending verification, 1 new P1 open)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
-- **Last Updated**: 2025-11-30
+- **Last Updated**: 2025-12-02
