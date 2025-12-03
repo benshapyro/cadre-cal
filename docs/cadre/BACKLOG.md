@@ -214,6 +214,26 @@ Production issues and improvements for cal.cadreai.com.
   - Adds indexes for query performance
 - **Commits**: `342d8f570a` - Add missing migration for GroupPoll eventTypeId/bookingId
 
+### [BUG-008] Users page shows "commercial feature" gate in production
+- **Reported**: 2025-12-02
+- **Status**: ✅ Fixed
+- **Priority**: P1 (Critical) - Cannot add team members
+- **Description**: Admin Users page (`/settings/admin/users`) shows "This is a commercial feature" and prevents adding users
+- **Root Cause**:
+  - `NEXT_PUBLIC_LICENSE_CONSENT=agree` only consents to AGPLv3 terms, doesn't bypass license check
+  - EE features gated by `withLicenseRequired()` HOC which checks `session.hasValidLicense`
+  - `hasValidLicense` comes from `LicenseKeyService.checkLicense()`
+  - Without `CALCOM_LICENSE_KEY`, uses `NoopLicenseKeyService` which returned `false`
+- **Fix Applied** (2025-12-02):
+  - Modified `NoopLicenseKeyService.checkLicense()` to return `true` when `NEXT_PUBLIC_LICENSE_CONSENT=agree`
+  - This allows self-hosted deployments to use EE features (permitted under AGPLv3)
+  - Real license key validation still works for Cal.com enterprise customers
+  - Added `NEXT_PUBLIC_LICENSE_CONSENT` to turbo.json env vars
+- **Affected Files**:
+  - `packages/features/ee/common/server/LicenseKeyService.ts:126-140`
+  - `turbo.json` - Added env var declaration
+- **Commits**: `8a31e42360` - Allow EE features for self-hosted with license consent
+
 ---
 
 ## Enhancements
@@ -351,8 +371,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 6
-- **Bugs**: 7 (2 fixed, 1 analyzed - not a bug, 3 fix pending verification)
+- **Total Open**: 5
+- **Bugs**: 8 (3 fixed, 1 analyzed - not a bug, 3 fix pending verification, 1 open)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-12-02
