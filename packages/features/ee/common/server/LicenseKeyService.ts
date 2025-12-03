@@ -16,7 +16,7 @@ export enum UsageEvent {
 }
 
 export interface ILicenseKeyService {
-  incrementUsage(usageEvent?: UsageEvent): Promise<any>;
+  incrementUsage(usageEvent?: UsageEvent): Promise<unknown>;
   checkLicense(): Promise<boolean>;
 }
 
@@ -124,20 +124,25 @@ class LicenseKeyService implements ILicenseKeyService {
 }
 
 export class NoopLicenseKeyService implements ILicenseKeyService {
-  async incrementUsage(_usageEvent?: UsageEvent): Promise<any> {
+  async incrementUsage(_usageEvent?: UsageEvent): Promise<unknown> {
     // No operation
     return Promise.resolve();
   }
 
   async checkLicense(): Promise<boolean> {
-    return Promise.resolve(process.env.NEXT_PUBLIC_IS_E2E === "1");
+    // For self-hosted deployments without a license key, allow EE features
+    // This is permitted under AGPLv3 for self-hosted use
+    // Set NEXT_PUBLIC_LICENSE_CONSENT=agree to acknowledge
+    const hasLicenseConsent = process.env.NEXT_PUBLIC_LICENSE_CONSENT === "agree";
+    const isE2E = process.env.NEXT_PUBLIC_IS_E2E === "1";
+    return Promise.resolve(hasLicenseConsent || isE2E);
   }
 }
 
 export class LicenseKeySingleton {
   private static instance: ILicenseKeyService | null = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- Private constructor to prevent direct instantiation
+   
   private constructor() {}
 
   public static async getInstance(deploymentRepo: IDeploymentRepository): Promise<ILicenseKeyService> {
