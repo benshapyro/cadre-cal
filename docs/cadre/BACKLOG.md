@@ -234,6 +234,27 @@ Production issues and improvements for cal.cadreai.com.
   - `turbo.json` - Added env var declaration
 - **Commits**: `8a31e42360` - Allow EE features for self-hosted with license consent
 
+### [BUG-009] Railway build fails - TypeScript error in inviteMember test
+- **Reported**: 2025-12-02
+- **Status**: ✅ Fixed
+- **Priority**: P0 (Critical) - Blocks all deployments
+- **Description**: Railway build fails with TypeScript error in tRPC package
+- **Error**:
+  ```
+  server/routers/viewer/teams/inviteMember/inviteMember.handler.integration-test.ts(93,7):
+  error TS2322: Type 'null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.
+  ```
+- **Root Cause**:
+  - `createTestTeam()` helper accepts `metadata?: JsonValue` parameter
+  - `JsonValue` type includes `null`, but Prisma's `metadata` field expects `InputJsonValue | NullableJsonNullValueInput | undefined`
+  - Passing `null` directly to `prisma.team.create()` fails TypeScript validation
+  - Pre-existing issue in Cal.com codebase (not from Cadre changes)
+- **Fix Applied** (2025-12-02):
+  - Changed line 93 from `metadata: data.metadata,` to `...(data.metadata != null ? { metadata: data.metadata } : {}),`
+  - Conditional spread only includes `metadata` field when it has a non-null value
+- **Affected Files**:
+  - `packages/trpc/server/routers/viewer/teams/inviteMember/inviteMember.handler.integration-test.ts:93`
+
 ---
 
 ## Enhancements
@@ -371,8 +392,8 @@ Items moved here after being fixed/implemented.
 ---
 
 ## Statistics
-- **Total Open**: 5
-- **Bugs**: 8 (3 fixed, 1 analyzed - not a bug, 3 fix pending verification, 1 open)
+- **Total Open**: 4
+- **Bugs**: 9 (4 fixed, 1 analyzed - not a bug, 3 fix pending verification, 1 open)
 - **Enhancements**: 2 (1 done, 1 open)
 - **UX**: 2 (1 done, 1 open)
 - **Last Updated**: 2025-12-02
